@@ -1,0 +1,11 @@
+<resources>
+    <dimen name="recents_padding">16dp</dimen>
+    <dimen name="task_width">280dp</dimen>
+    <dimen name="task_height">400dp</dimen>
+    <dimen name="task_margin">16dp</dimen>
+    <dimen name="task_elevation">8dp</dimen>
+    <dimen name="icon_size">64dp</dimen>
+    <dimen name="title_text_size">18sp</dimen>
+    <dimen name="empty_text_size">24sp</dimen>
+    <dimen name="page_margin">-100dp</dimen> <!-- 卡片重叠效果 -->
+</resources>
