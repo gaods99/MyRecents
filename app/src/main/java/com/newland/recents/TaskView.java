@@ -4,7 +4,6 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -32,8 +31,7 @@ public class TaskView extends FrameLayout {
         setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                mFlingDetector.onTouchEvent(event);
-                return true;
+                return mFlingDetector.onTouchEvent(event);
             }
         });
     }

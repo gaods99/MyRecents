@@ -4,16 +4,19 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.viewpager.widget.ViewPager;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RecentsActivity extends Activity {
+    private static final String TAG = "newland";
     private static RecentsActivity sInstance;
     private ViewPager mViewPager;
     private RecentsPagerAdapter mAdapter;
@@ -29,6 +32,8 @@ public class RecentsActivity extends Activity {
         mViewPager = findViewById(R.id.view_pager);
         mEmptyView = findViewById(R.id.empty_view);
         mActivityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+
+        mViewPager.setPageMargin(16);  // px
 
         loadRecentTasks();
     }
@@ -63,7 +68,7 @@ public class RecentsActivity extends Activity {
 
     private List<ActivityManager.RecentTaskInfo> getRecentTasks() {
         try {
-            return mActivityManager.getRecentTasks(20, ActivityManager.RECENT_WITH_EXCLUDED);
+            return mActivityManager.getRecentTasks(30, ActivityManager.RECENT_WITH_EXCLUDED);
         } catch (SecurityException e) {
             showToast(R.string.recents_permission_error);
             return new ArrayList<>();
@@ -85,8 +90,16 @@ public class RecentsActivity extends Activity {
     public void removeTask(int position) {
         ActivityManager.RecentTaskInfo task = mAdapter.getTask(position);
         if (task != null) {
-            mActivityManager.removeTask(task.persistentId);
-            refreshTasks();
+            try {
+                Class<?> activityManagerClass = mActivityManager.getClass();
+                Method removeTaskMethod = activityManagerClass.getDeclaredMethod(
+                        "removeTask", int.class);
+                removeTaskMethod.setAccessible(true);
+                removeTaskMethod.invoke(mActivityManager, task.persistentId);
+                refreshTasks();
+            } catch (Exception e) {
+                Log.e(TAG, "Unexpected error removing task", e);
+            }
         }
     }
 

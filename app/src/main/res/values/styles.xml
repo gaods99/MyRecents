@@ -1,0 +1,17 @@
+<resources>
+    <!-- 基础主题 -->
+    <style name="RecentsTheme" parent="android:Theme.DeviceDefault.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@style/RecentsAnimation</item>
+    </style>
+
+    <!-- 窗口动画 -->
+    <style name="RecentsAnimation" parent="android:Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@anim/recents_enter</item>
+        <item name="android:activityOpenExitAnimation">@anim/recents_exit</item>
+        <item name="android:activityCloseEnterAnimation">@anim/recents_enter</item>
+        <item name="android:activityCloseExitAnimation">@anim/recents_exit</item>
+    </style>
+</resources>

@@ -13,7 +13,6 @@ public class SystemPropertiesProxy {
 
     private static final String SYSTEM_PROPERTIES_CLASS = "android.os.SystemProperties";
     private static volatile SystemPropertiesProxy sInstance;
-    private Class<?> mSystemPropertiesClass;
     private Method mGetBooleanMethod;
     private Method mGetIntMethod;
     private Method mGetLongMethod;
@@ -21,16 +20,16 @@ public class SystemPropertiesProxy {
 
     private SystemPropertiesProxy() {
         try {
-            mSystemPropertiesClass = Class.forName(SYSTEM_PROPERTIES_CLASS);
+            Class<?> systemPropertiesClass = Class.forName(SYSTEM_PROPERTIES_CLASS);
 
             // 获取方法
-            mGetBooleanMethod = mSystemPropertiesClass.getMethod(
+            mGetBooleanMethod = systemPropertiesClass.getMethod(
                     "getBoolean", String.class, boolean.class);
-            mGetIntMethod = mSystemPropertiesClass.getMethod(
+            mGetIntMethod = systemPropertiesClass.getMethod(
                     "getInt", String.class, int.class);
-            mGetLongMethod = mSystemPropertiesClass.getMethod(
+            mGetLongMethod = systemPropertiesClass.getMethod(
                     "getLong", String.class, long.class);
-            mGetStringMethod = mSystemPropertiesClass.getMethod(
+            mGetStringMethod = systemPropertiesClass.getMethod(
                     "get", String.class);
         } catch (Exception e) {
             Log.e(TAG, "Failed to initialize SystemPropertiesProxy", e);

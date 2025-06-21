@@ -8,7 +8,7 @@ public class RecentsController {
     private final Context mContext;
 
     private RecentsController(Context context) {
-        mContext = context.getApplicationContext();
+        mContext = RecentsApp.getContext();
     }
 
     public static synchronized RecentsController getInstance(Context context) {
@@ -26,8 +26,6 @@ public class RecentsController {
                 Intent.FLAG_ACTIVITY_CLEAR_TOP |
                 Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         mContext.startActivity(intent);
-        mContext.startActivity(new Intent(mContext, RecentsActivity.class)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 
     public void hideRecents() {
