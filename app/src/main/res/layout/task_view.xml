@@ -3,6 +3,7 @@
     android:layout_width="@dimen/task_width"
     android:layout_height="@dimen/task_height"
     android:layout_margin="@dimen/task_margin"
+    android:background="@color/task_background"
     android:elevation="@dimen/task_elevation"
     android:clickable="true"
     android:focusable="true">
