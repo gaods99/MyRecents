@@ -68,7 +68,19 @@ public class RecentsActivity extends Activity {
 
     private List<ActivityManager.RecentTaskInfo> getRecentTasks() {
         try {
-            return mActivityManager.getRecentTasks(30, ActivityManager.RECENT_WITH_EXCLUDED);
+            List<ActivityManager.RecentTaskInfo> tasks = mActivityManager.getRecentTasks(30, ActivityManager.RECENT_WITH_EXCLUDED);
+            List<ActivityManager.RecentTaskInfo> filteredTasks = new ArrayList<>();
+            for (ActivityManager.RecentTaskInfo task : tasks) {
+                if (task.baseIntent != null && task.baseIntent.getComponent() != null) {
+                    String packageName = task.baseIntent.getComponent().getPackageName();
+                    if (!"com.newland.recents".equals(packageName)) {
+                        filteredTasks.add(task);
+                    }
+                } else {
+                    filteredTasks.add(task); // Keep tasks with null baseIntent or component
+                }
+            }
+            return filteredTasks;
         } catch (SecurityException e) {
             showToast(R.string.recents_permission_error);
             return new ArrayList<>();
