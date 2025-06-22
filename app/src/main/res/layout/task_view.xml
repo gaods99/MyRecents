@@ -5,9 +5,7 @@
     android:layout_gravity="center"
     android:layout_margin="@dimen/task_margin"
     android:background="@color/task_background"
-    android:elevation="@dimen/task_elevation"
-    android:clickable="true"
-    android:focusable="true">
+    android:elevation="@dimen/task_elevation">
 
     <ImageView
         android:id="@+id/task_icon"
