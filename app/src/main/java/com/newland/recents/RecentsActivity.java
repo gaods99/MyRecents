@@ -3,6 +3,9 @@ package com.newland.recents;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -22,6 +25,7 @@ public class RecentsActivity extends Activity {
     private RecentsPagerAdapter mAdapter;
     private View mEmptyView;
     private ActivityManager mActivityManager;
+    private String mLauncherPackageName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +39,18 @@ public class RecentsActivity extends Activity {
 
         mViewPager.setPageMargin(16);  // px
 
+        mLauncherPackageName = getLauncherPackageName();
         loadRecentTasks();
+    }
+
+    private String getLauncherPackageName() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        ResolveInfo resolveInfo = getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
+        if (resolveInfo != null && resolveInfo.activityInfo != null) {
+            return resolveInfo.activityInfo.packageName;
+        }
+        return null;
     }
 
     @Override
@@ -73,7 +88,7 @@ public class RecentsActivity extends Activity {
             for (ActivityManager.RecentTaskInfo task : tasks) {
                 if (task.baseIntent != null && task.baseIntent.getComponent() != null) {
                     String packageName = task.baseIntent.getComponent().getPackageName();
-                    if (!"com.newland.recents".equals(packageName)) {
+                    if (!"com.newland.recents".equals(packageName) && (mLauncherPackageName == null || !mLauncherPackageName.equals(packageName))) {
                         filteredTasks.add(task);
                     }
                 } else {
