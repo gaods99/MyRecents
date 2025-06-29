@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="@dimen/task_width"
+    android:layout_height="@dimen/task_height"
+    android:layout_margin="@dimen/task_margin"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    app:cardCornerRadius="@dimen/task_corner_radius"
+    app:cardElevation="@dimen/task_elevation"
+    app:cardUseCompatPadding="true">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- 任务缩略图 -->
+        <ImageView
+            android:id="@+id/task_thumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/task_header"
+            android:scaleType="centerCrop"
+            android:background="@color/task_thumbnail_background" />
+
+        <!-- 任务头部信息 -->
+        <LinearLayout
+            android:id="@+id/task_header"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/task_header_height"
+            android:layout_alignParentBottom="true"
+            android:background="@color/task_header_background"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingLeft="@dimen/task_header_padding"
+            android:paddingRight="@dimen/task_header_padding">
+
+            <!-- 应用图标 -->
+            <ImageView
+                android:id="@+id/task_icon"
+                android:layout_width="@dimen/task_icon_size"
+                android:layout_height="@dimen/task_icon_size"
+                android:layout_marginRight="@dimen/task_icon_margin"
+                android:scaleType="centerInside" />
+
+            <!-- 应用标题 -->
+            <TextView
+                android:id="@+id/task_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/task_title_color"
+                android:textSize="@dimen/task_title_text_size" />
+
+            <!-- 删除按钮 -->
+            <ImageView
+                android:id="@+id/task_dismiss"
+                android:layout_width="@dimen/task_dismiss_size"
+                android:layout_height="@dimen/task_dismiss_size"
+                android:layout_marginLeft="@dimen/task_dismiss_margin"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="@dimen/task_dismiss_padding"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_close"
+                android:contentDescription="@string/task_dismiss_description" />
+
+        </LinearLayout>
+
+        <!-- 任务状态指示器 -->
+        <View
+            android:id="@+id/task_focus_indicator"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/task_focus_indicator_height"
+            android:layout_alignParentTop="true"
+            android:background="@color/task_focus_indicator"
+            android:visibility="gone" />
+
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

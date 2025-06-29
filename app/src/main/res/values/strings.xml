@@ -1,6 +1,19 @@
 <resources>
     <string name="app_name">Newland Recents</string>
-    <string name="recents_empty_text">No recent tasks</string>
+    
+    <!-- Empty State -->
+    <string name="recents_empty_text">No recent apps</string>
+    <string name="recents_empty_subtitle">Open an app to see it here</string>
+    
+    <!-- Task Actions -->
+    <string name="task_dismiss_description">Close app</string>
+    
+    <!-- Error Messages -->
     <string name="recents_permission_error">Permission denied. Please enable usage access for this app.</string>
     <string name="recents_launch_error">Unable to launch application</string>
+    <string name="recents_remove_error">Unable to remove task</string>
+    
+    <!-- Accessibility -->
+    <string name="task_accessibility_description">Task: %1$s</string>
+    <string name="task_thumbnail_description">App preview</string>
 </resources>

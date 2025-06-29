@@ -1,31 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/recents_background"
-    android:padding="@dimen/recents_padding">
+    android:background="@color/recents_background">
 
-    <androidx.viewpager.widget.ViewPager
-        android:id="@+id/view_pager"
+    <!-- Task List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/task_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"
         android:clipToPadding="false"
-        android:overScrollMode="never" />
+        android:overScrollMode="never"
+        android:padding="@dimen/recents_padding"
+        android:scrollbars="none" />
 
+    <!-- Empty State View -->
     <LinearLayout
         android:id="@+id/empty_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="@dimen/empty_icon_size"
+            android:layout_height="@dimen/empty_icon_size"
+            android:layout_marginBottom="@dimen/empty_icon_margin"
+            android:alpha="0.6"
+            android:src="@drawable/ic_recents_empty"
+            android:tint="@color/empty_text" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/recents_empty_text"
             android:textColor="@color/empty_text"
-            android:textSize="@dimen/empty_text_size"/>
+            android:textSize="@dimen/empty_text_size" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/empty_subtitle_margin"
+            android:text="@string/recents_empty_subtitle"
+            android:textColor="@color/empty_subtitle_color"
+            android:textSize="@dimen/empty_subtitle_text_size" />
+
     </LinearLayout>
+
+    <!-- Loading Indicator -->
+    <ProgressBar
+        android:id="@+id/loading_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
 </FrameLayout>

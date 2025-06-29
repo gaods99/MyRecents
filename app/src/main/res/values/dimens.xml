@@ -1,11 +1,39 @@
 <resources>
+    <!-- Recents Layout -->
     <dimen name="recents_padding">16dp</dimen>
+    
+    <!-- Task Card -->
     <dimen name="task_width">280dp</dimen>
     <dimen name="task_height">400dp</dimen>
-    <dimen name="task_margin">16dp</dimen>
-    <dimen name="task_elevation">8dp</dimen>
-    <dimen name="icon_size">64dp</dimen>
-    <dimen name="title_text_size">18sp</dimen>
-    <dimen name="empty_text_size">24sp</dimen>
-    <dimen name="page_margin">-100dp</dimen> <!-- 卡片重叠效果 -->
+    <dimen name="task_margin">8dp</dimen>
+    <dimen name="task_corner_radius">12dp</dimen>
+    <dimen name="task_elevation">4dp</dimen>
+    <dimen name="task_elevation_active">8dp</dimen>
+    <dimen name="task_elevation_dragging">12dp</dimen>
+    
+    <!-- Task Header -->
+    <dimen name="task_header_height">56dp</dimen>
+    <dimen name="task_header_padding">12dp</dimen>
+    
+    <!-- Task Icon -->
+    <dimen name="task_icon_size">32dp</dimen>
+    <dimen name="task_icon_margin">8dp</dimen>
+    
+    <!-- Task Title -->
+    <dimen name="task_title_text_size">14sp</dimen>
+    
+    <!-- Task Dismiss Button -->
+    <dimen name="task_dismiss_size">32dp</dimen>
+    <dimen name="task_dismiss_margin">4dp</dimen>
+    <dimen name="task_dismiss_padding">4dp</dimen>
+    
+    <!-- Task Focus Indicator -->
+    <dimen name="task_focus_indicator_height">3dp</dimen>
+    
+    <!-- Empty State -->
+    <dimen name="empty_icon_size">64dp</dimen>
+    <dimen name="empty_icon_margin">16dp</dimen>
+    <dimen name="empty_text_size">18sp</dimen>
+    <dimen name="empty_subtitle_margin">8dp</dimen>
+    <dimen name="empty_subtitle_text_size">14sp</dimen>
 </resources>

@@ -1,70 +1,110 @@
 package com.newland.recents;
 
 import android.app.Activity;
-import android.app.ActivityManager;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import androidx.viewpager.widget.ViewPager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
+import com.newland.recents.adapter.TaskAdapter;
+import com.newland.recents.loader.TaskLoader;
+import com.newland.recents.manager.TaskManager;
+import com.newland.recents.model.Task;
+
 import java.util.List;
 
-public class RecentsActivity extends Activity {
-    private static final String TAG = "newland";
+/**
+ * Recent tasks activity, based on Launcher3 Quickstep implementation
+ */
+public class RecentsActivity extends Activity implements 
+        TaskAdapter.TaskAdapterListener, TaskLoader.TaskLoadListener {
+    
+    private static final String TAG = "RecentsActivity";
     private static RecentsActivity sInstance;
-    private ViewPager mViewPager;
-    private RecentsPagerAdapter mAdapter;
+    
+    // UI Components
+    private RecyclerView mTaskRecyclerView;
     private View mEmptyView;
-    private ActivityManager mActivityManager;
-    private String mLauncherPackageName;
-
+    private ProgressBar mLoadingIndicator;
+    
+    // Core Components
+    private TaskAdapter mTaskAdapter;
+    private TaskLoader mTaskLoader;
+    private TaskManager mTaskManager;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.recents_activity);
-
+        
         sInstance = this;
-        mViewPager = findViewById(R.id.view_pager);
+        
+        initializeComponents();
+        setupRecyclerView();
+        loadTasks();
+    }
+    
+    private void initializeComponents() {
+        // Initialize UI components
+        mTaskRecyclerView = findViewById(R.id.task_recycler_view);
         mEmptyView = findViewById(R.id.empty_view);
-        mActivityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-
-        mViewPager.setPageMargin(16);  // px
-
-        mLauncherPackageName = getLauncherPackageName();
-        loadRecentTasks();
+        mLoadingIndicator = findViewById(R.id.loading_indicator);
+        
+        // Initialize core components
+        mTaskAdapter = new TaskAdapter(this);
+        mTaskLoader = new TaskLoader(this);
+        mTaskManager = new TaskManager(this);
     }
-
-    private String getLauncherPackageName() {
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.addCategory(Intent.CATEGORY_HOME);
-        ResolveInfo resolveInfo = getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
-        if (resolveInfo != null && resolveInfo.activityInfo != null) {
-            return resolveInfo.activityInfo.packageName;
-        }
-        return null;
+    
+    private void setupRecyclerView() {
+        // Setup RecyclerView with horizontal layout like Launcher3
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, 
+                LinearLayoutManager.HORIZONTAL, false);
+        mTaskRecyclerView.setLayoutManager(layoutManager);
+        mTaskRecyclerView.setAdapter(mTaskAdapter);
+        
+        // Add item decoration for spacing
+        int spacing = getResources().getDimensionPixelSize(R.dimen.task_margin);
+        mTaskRecyclerView.addItemDecoration(new TaskItemDecoration(spacing));
     }
-
+    
+    private void loadTasks() {
+        showLoading(true);
+        mTaskLoader.loadTasks(this);
+    }
+    
+    private void showLoading(boolean show) {
+        mLoadingIndicator.setVisibility(show ? View.VISIBLE : View.GONE);
+        mTaskRecyclerView.setVisibility(show ? View.GONE : View.VISIBLE);
+        mEmptyView.setVisibility(View.GONE);
+    }
+    
+    private void updateEmptyState() {
+        boolean isEmpty = mTaskAdapter.isEmpty();
+        mEmptyView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+        mTaskRecyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        mLoadingIndicator.setVisibility(View.GONE);
+    }
+    
     @Override
     protected void onResume() {
         super.onResume();
-        refreshTasks();
+        // Refresh tasks when activity resumes
+        loadTasks();
     }
-
+    
     @Override
     protected void onDestroy() {
         super.onDestroy();
         sInstance = null;
     }
-
+    
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -73,90 +113,102 @@ public class RecentsActivity extends Activity {
         }
         return super.onKeyDown(keyCode, event);
     }
-
-    private void loadRecentTasks() {
-        List<ActivityManager.RecentTaskInfo> tasks = getRecentTasks();
-        mAdapter = new RecentsPagerAdapter(this, tasks);
-        mViewPager.setAdapter(mAdapter);
-        updateEmptyState(tasks);
-    }
-
-    private List<ActivityManager.RecentTaskInfo> getRecentTasks() {
-        try {
-            List<ActivityManager.RecentTaskInfo> tasks = mActivityManager.getRecentTasks(30, ActivityManager.RECENT_WITH_EXCLUDED);
-            List<ActivityManager.RecentTaskInfo> filteredTasks = new ArrayList<>();
-            for (ActivityManager.RecentTaskInfo task : tasks) {
-                if (task.baseIntent != null && task.baseIntent.getComponent() != null) {
-                    String packageName = task.baseIntent.getComponent().getPackageName();
-                    if (!"com.newland.recents".equals(packageName) && (mLauncherPackageName == null || !mLauncherPackageName.equals(packageName))) {
-                        filteredTasks.add(task);
-                    }
-                } else {
-                    filteredTasks.add(task); // Keep tasks with null baseIntent or component
-                }
-            }
-            return filteredTasks;
-        } catch (SecurityException e) {
-            showToast(R.string.recents_permission_error);
-            return new ArrayList<>();
-        }
-    }
-
-    public void refreshTasks() {
-        List<ActivityManager.RecentTaskInfo> tasks = getRecentTasks();
-        mAdapter.updateTasks(tasks);
-        updateEmptyState(tasks);
-    }
-
-    private void updateEmptyState(List<ActivityManager.RecentTaskInfo> tasks) {
-        boolean isEmpty = tasks == null || tasks.isEmpty();
-        mEmptyView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
-        mViewPager.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
-    }
-
-    public void removeTask(int position) {
-        ActivityManager.RecentTaskInfo task = mAdapter.getTask(position);
-        if (task != null) {
-            try {
-                Class<?> activityManagerClass = mActivityManager.getClass();
-                Method removeTaskMethod = activityManagerClass.getDeclaredMethod(
-                        "removeTask", int.class);
-                removeTaskMethod.setAccessible(true);
-                removeTaskMethod.invoke(mActivityManager, task.persistentId);
-                refreshTasks();
-            } catch (Exception e) {
-                Log.e(TAG, "Unexpected error removing task", e);
-            }
-        }
-    }
-
-    public void launchTask(int position) {
-        ActivityManager.RecentTaskInfo task = mAdapter.getTask(position);
-        if (task != null && task.baseIntent != null) {
-            try {
-                startActivity(task.baseIntent);
-                finish();
-                overridePendingTransition(0, 0);
-            } catch (Exception e) {
-                showToast(R.string.recents_launch_error);
-            }
-        }
-    }
-
+    
     public void hideRecents() {
         finish();
         overridePendingTransition(0, R.anim.recents_exit);
     }
-
+    
+    // TaskLoader.TaskLoadListener implementation
+    
+    @Override
+    public void onTasksLoaded(List<Task> tasks) {
+        Log.d(TAG, "Loaded " + tasks.size() + " tasks");
+        
+        mTaskAdapter.updateTasks(tasks);
+        updateEmptyState();
+        
+        // Load thumbnails for visible tasks
+        for (Task task : tasks) {
+            mTaskLoader.loadTaskThumbnail(task, this);
+        }
+    }
+    
+    @Override
+    public void onTaskThumbnailLoaded(Task task, Bitmap thumbnail) {
+        Log.d(TAG, "Thumbnail loaded for task: " + task.title);
+        mTaskAdapter.updateTaskThumbnail(task, thumbnail);
+    }
+    
+    // TaskAdapter.TaskAdapterListener implementation
+    
+    @Override
+    public void onTaskClick(Task task, int position) {
+        Log.d(TAG, "Task clicked: " + task.title);
+        
+        if (mTaskManager.startTask(task)) {
+            hideRecents();
+        } else {
+            showToast(R.string.recents_launch_error);
+        }
+    }
+    
+    @Override
+    public void onTaskDismiss(Task task, int position) {
+        Log.d(TAG, "Task dismissed: " + task.title);
+        
+        if (mTaskManager.removeTask(task)) {
+            mTaskAdapter.removeTask(position);
+            updateEmptyState();
+        } else {
+            showToast(R.string.recents_remove_error);
+        }
+    }
+    
+    @Override
+    public void onTaskLongClick(Task task, int position) {
+        Log.d(TAG, "Task long clicked: " + task.title);
+        // TODO: Show task options menu
+    }
+    
     private void showToast(int resId) {
         Toast.makeText(this, resId, Toast.LENGTH_SHORT).show();
     }
-
+    
+    // Static methods for external access
+    
     public static RecentsActivity getInstance() {
         return sInstance;
     }
-
+    
     public static boolean isVisible() {
         return sInstance != null;
+    }
+    
+    /**
+     * Task item decoration for spacing
+     */
+    private static class TaskItemDecoration extends RecyclerView.ItemDecoration {
+        private final int spacing;
+        
+        TaskItemDecoration(int spacing) {
+            this.spacing = spacing;
+        }
+        
+        @Override
+        public void getItemOffsets(android.graphics.Rect outRect, View view, 
+                RecyclerView parent, RecyclerView.State state) {
+            outRect.left = spacing;
+            outRect.right = spacing;
+            
+            // Add extra spacing for first and last items
+            int position = parent.getChildAdapterPosition(view);
+            if (position == 0) {
+                outRect.left = spacing * 2;
+            }
+            if (position == state.getItemCount() - 1) {
+                outRect.right = spacing * 2;
+            }
+        }
     }
 }

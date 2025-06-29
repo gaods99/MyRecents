@@ -1,9 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="recents_background">#CC000000</color>
+    <!-- Recents Background -->
+    <color name="recents_background">#E6000000</color>
+    
+    <!-- Task Card -->
     <color name="task_background">#FFFFFF</color>
-    <color name="task_title">#000000</color>
+    <color name="task_thumbnail_background">#F5F5F5</color>
+    <color name="task_header_background">#FFFFFF</color>
+    
+    <!-- Task Text -->
+    <color name="task_title_color">#212121</color>
+    
+    <!-- Task Focus -->
+    <color name="task_focus_indicator">#2196F3</color>
+    
+    <!-- Empty State -->
     <color name="empty_text">#FFFFFF</color>
+    <color name="empty_subtitle_color">#CCFFFFFF</color>
+    
+    <!-- Material Colors -->
     <color name="purple_200">#BB86FC</color>
     <color name="purple_500">#6200EE</color>
     <color name="purple_700">#3700B3</color>
