@@ -100,11 +100,12 @@ public class Task {
      * 检查是否是系统任务
      */
     public boolean isSystemTask() {
-        return packageName != null && (
-            packageName.equals("com.android.systemui") ||
-            packageName.equals("com.android.launcher") ||
-            packageName.equals("com.android.launcher3")
-        );
+        if (packageName == null) {
+            return false;
+        }
+        
+        // 系统UI应用
+        return packageName.equals("com.android.systemui");
     }
     
     @Override

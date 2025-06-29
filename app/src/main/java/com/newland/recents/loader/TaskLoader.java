@@ -98,7 +98,34 @@ public class TaskLoader {
             return false;
         }
         
+        // 过滤掉 Launcher 应用
+        if (isLauncherApp(packageName)) {
+            return false;
+        }
+        
         return true;
+    }
+    
+    /**
+     * 检查是否是 Launcher 应用（通过 Intent 查询默认桌面）
+     */
+    private boolean isLauncherApp(String packageName) {
+        try {
+            android.content.Intent homeIntent = new android.content.Intent(android.content.Intent.ACTION_MAIN);
+            homeIntent.addCategory(android.content.Intent.CATEGORY_HOME);
+            
+            android.content.pm.ResolveInfo resolveInfo = mPackageManager.resolveActivity(
+                homeIntent, PackageManager.MATCH_DEFAULT_ONLY);
+            
+            if (resolveInfo != null && resolveInfo.activityInfo != null) {
+                String defaultLauncherPackage = resolveInfo.activityInfo.packageName;
+                return packageName.equals(defaultLauncherPackage);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to check default launcher for " + packageName, e);
+        }
+        
+        return false;
     }
     
     /**
