@@ -16,6 +16,7 @@ import com.newland.recents.adapter.TaskAdapter;
 import com.newland.recents.loader.TaskLoader;
 import com.newland.recents.manager.TaskManager;
 import com.newland.recents.model.Task;
+import com.newland.recents.utils.TaskViewSizeCalculator;
 
 import java.util.List;
 
@@ -69,9 +70,19 @@ public class RecentsActivity extends Activity implements
         mTaskRecyclerView.setLayoutManager(layoutManager);
         mTaskRecyclerView.setAdapter(mTaskAdapter);
         
+        // Use dynamic sizing like Launcher3 Quickstep
+        TaskViewSizeCalculator sizeCalculator = new TaskViewSizeCalculator(this);
+        
+        // Set dynamic padding
+        int padding = sizeCalculator.getRecyclerViewPadding();
+        mTaskRecyclerView.setPaddingRelative(padding, 0, padding, 0);
+        
         // Add item decoration for spacing
-        int spacing = getResources().getDimensionPixelSize(R.dimen.task_margin);
+        int spacing = sizeCalculator.getTaskMargin();
         mTaskRecyclerView.addItemDecoration(new TaskItemDecoration(spacing));
+        
+        // Log debug info
+        Log.d(TAG, "Dynamic sizing: " + sizeCalculator.getDebugInfo());
     }
     
     private void loadTasks() {

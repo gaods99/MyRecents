@@ -2,30 +2,28 @@
     <!-- Recents Layout -->
     <dimen name="recents_padding">16dp</dimen>
     
-    <!-- Task Card -->
-    <dimen name="task_width">280dp</dimen>
-    <dimen name="task_height">400dp</dimen>
-    <dimen name="task_margin">8dp</dimen>
-    <dimen name="task_corner_radius">12dp</dimen>
-    <dimen name="task_elevation">4dp</dimen>
-    <dimen name="task_elevation_active">8dp</dimen>
-    <dimen name="task_elevation_dragging">12dp</dimen>
+    <!-- Task Card - SystemUI Android 7.1.2 style -->
+    <dimen name="task_margin">6dp</dimen>
+    <dimen name="task_corner_radius">2dp</dimen>
+    <dimen name="task_elevation">2dp</dimen>
+    <dimen name="task_elevation_active">4dp</dimen>
+    <dimen name="task_elevation_dragging">8dp</dimen>
     
-    <!-- Task Header -->
-    <dimen name="task_header_height">56dp</dimen>
-    <dimen name="task_header_padding">12dp</dimen>
+    <!-- Task Header - SystemUI style -->
+    <dimen name="task_header_height">48dp</dimen>
+    <dimen name="task_header_padding">8dp</dimen>
     
-    <!-- Task Icon -->
-    <dimen name="task_icon_size">32dp</dimen>
-    <dimen name="task_icon_margin">8dp</dimen>
+    <!-- Task Icon - SystemUI style -->
+    <dimen name="task_icon_size">24dp</dimen>
+    <dimen name="task_icon_margin">6dp</dimen>
     
-    <!-- Task Title -->
-    <dimen name="task_title_text_size">14sp</dimen>
+    <!-- Task Title - SystemUI style -->
+    <dimen name="task_title_text_size">13sp</dimen>
     
-    <!-- Task Dismiss Button -->
-    <dimen name="task_dismiss_size">32dp</dimen>
-    <dimen name="task_dismiss_margin">4dp</dimen>
-    <dimen name="task_dismiss_padding">4dp</dimen>
+    <!-- Task Dismiss Button - SystemUI style -->
+    <dimen name="task_dismiss_size">28dp</dimen>
+    <dimen name="task_dismiss_margin">2dp</dimen>
+    <dimen name="task_dismiss_padding">6dp</dimen>
     
     <!-- Task Focus Indicator -->
     <dimen name="task_focus_indicator_height">3dp</dimen>

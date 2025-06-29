@@ -10,19 +10,21 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.newland.recents.R;
 import com.newland.recents.model.Task;
+import com.newland.recents.utils.TaskViewSizeCalculator;
 import com.newland.recents.views.TaskViewHolder;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 任务列表适配器，参考Launcher3的实现
+ * Task list adapter, based on Launcher3 implementation
  */
 public class TaskAdapter extends RecyclerView.Adapter<TaskViewHolder> 
         implements TaskViewHolder.TaskViewListener {
     
     private final List<Task> mTasks = new ArrayList<>();
     private TaskAdapterListener mListener;
+    private TaskViewSizeCalculator mSizeCalculator;
     
     public interface TaskAdapterListener {
         void onTaskClick(Task task, int position);
@@ -40,6 +42,18 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskViewHolder>
     public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.task_item, parent, false);
+        
+        // Initialize size calculator if not already done
+        if (mSizeCalculator == null) {
+            mSizeCalculator = new TaskViewSizeCalculator(parent.getContext());
+        }
+        
+        // Dynamically set task card size
+        ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
+        layoutParams.width = mSizeCalculator.getTaskWidth();
+        layoutParams.height = mSizeCalculator.getTaskHeight();
+        view.setLayoutParams(layoutParams);
+        
         return new TaskViewHolder(view, this);
     }
     
@@ -64,7 +78,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskViewHolder>
     }
     
     /**
-     * 更新任务列表
+     * Update task list
      */
     public void updateTasks(List<Task> tasks) {
         mTasks.clear();
@@ -75,17 +89,17 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskViewHolder>
     }
     
     /**
-     * 添加任务
+     * Add task
      */
     public void addTask(Task task) {
         if (task != null && !mTasks.contains(task)) {
-            mTasks.add(0, task); // 添加到开头
+            mTasks.add(0, task); // Add to beginning
             notifyItemInserted(0);
         }
     }
     
     /**
-     * 移除任务
+     * Remove task by position
      */
     public void removeTask(int position) {
         if (position >= 0 && position < mTasks.size()) {
@@ -95,7 +109,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskViewHolder>
     }
     
     /**
-     * 移除任务
+     * Remove task by object
      */
     public void removeTask(Task task) {
         int position = mTasks.indexOf(task);
@@ -105,7 +119,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskViewHolder>
     }
     
     /**
-     * 获取任务
+     * Get task by position
      */
     public Task getTask(int position) {
         if (position >= 0 && position < mTasks.size()) {
@@ -115,14 +129,14 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskViewHolder>
     }
     
     /**
-     * 获取任务位置
+     * Get task position
      */
     public int getTaskPosition(Task task) {
         return mTasks.indexOf(task);
     }
     
     /**
-     * 更新任务缩略图
+     * Update task thumbnail
      */
     public void updateTaskThumbnail(Task task, Bitmap thumbnail) {
         int position = getTaskPosition(task);
@@ -133,7 +147,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskViewHolder>
     }
     
     /**
-     * 清空任务列表
+     * Clear task list
      */
     public void clear() {
         int count = mTasks.size();
@@ -142,20 +156,20 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskViewHolder>
     }
     
     /**
-     * 检查是否为空
+     * Check if empty
      */
     public boolean isEmpty() {
         return mTasks.isEmpty();
     }
     
     /**
-     * 获取所有任务
+     * Get all tasks
      */
     public List<Task> getTasks() {
         return new ArrayList<>(mTasks);
     }
     
-    // TaskViewHolder.TaskViewListener 实现
+    // TaskViewHolder.TaskViewListener implementation
     
     @Override
     public void onTaskClick(Task task, int position) {

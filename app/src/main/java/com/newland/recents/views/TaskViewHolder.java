@@ -8,21 +8,20 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.newland.recents.R;
 import com.newland.recents.model.Task;
 
 /**
- * 任务视图持有者，参考Launcher3的TaskView实现
+ * 任务视图持有者，SystemUI Android 7.1.2 风格实现
  */
 public class TaskViewHolder extends RecyclerView.ViewHolder {
     
     private static final long DISMISS_ANIMATION_DURATION = 300;
     private static final long RETURN_ANIMATION_DURATION = 200;
     
-    public final CardView cardView;
+    public final View taskView;
     public final ImageView thumbnailView;
     public final ImageView iconView;
     public final TextView titleView;
@@ -43,7 +42,7 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
         
         mListener = listener;
         
-        cardView = (CardView) itemView;
+        taskView = itemView; // FrameLayout root view
         thumbnailView = itemView.findViewById(R.id.task_thumbnail);
         iconView = itemView.findViewById(R.id.task_icon);
         titleView = itemView.findViewById(R.id.task_title);
@@ -54,14 +53,14 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
     
     private void setupClickListeners() {
         // 点击任务启动应用
-        cardView.setOnClickListener(v -> {
+        taskView.setOnClickListener(v -> {
             if (!mIsAnimating && mTask != null && mListener != null) {
                 mListener.onTaskClick(mTask, getAdapterPosition());
             }
         });
         
         // 长按任务
-        cardView.setOnLongClickListener(v -> {
+        taskView.setOnLongClickListener(v -> {
             if (!mIsAnimating && mTask != null && mListener != null) {
                 mListener.onTaskLongClick(mTask, getAdapterPosition());
                 return true;
@@ -87,11 +86,11 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
         
         // 重置动画状态
         mIsAnimating = false;
-        cardView.setAlpha(1f);
-        cardView.setScaleX(1f);
-        cardView.setScaleY(1f);
-        cardView.setTranslationX(0f);
-        cardView.setTranslationY(0f);
+        taskView.setAlpha(1f);
+        taskView.setScaleX(1f);
+        taskView.setScaleY(1f);
+        taskView.setTranslationX(0f);
+        taskView.setTranslationY(0f);
         
         // 设置任务标题
         if (titleView != null) {
@@ -124,13 +123,13 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
         }
         
         // 设置焦点状态
-        cardView.setSelected(task.isFocused);
+        taskView.setSelected(task.isFocused);
         
-        // 设置激活状态
+        // 设置激活状态 - SystemUI 风格
         if (task.isActive) {
-            cardView.setCardElevation(cardView.getResources().getDimension(R.dimen.task_elevation_active));
+            taskView.setElevation(taskView.getResources().getDimension(R.dimen.task_elevation_active));
         } else {
-            cardView.setCardElevation(cardView.getResources().getDimension(R.dimen.task_elevation));
+            taskView.setElevation(taskView.getResources().getDimension(R.dimen.task_elevation));
         }
     }
     
@@ -155,19 +154,19 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
         mIsAnimating = true;
         
         // 向右滑出动画
-        ObjectAnimator translateX = ObjectAnimator.ofFloat(cardView, "translationX", 
-                0f, cardView.getWidth());
+        ObjectAnimator translateX = ObjectAnimator.ofFloat(taskView, "translationX", 
+                0f, taskView.getWidth());
         translateX.setDuration(DISMISS_ANIMATION_DURATION);
         
         // 透明度动画
-        ObjectAnimator alpha = ObjectAnimator.ofFloat(cardView, "alpha", 1f, 0f);
+        ObjectAnimator alpha = ObjectAnimator.ofFloat(taskView, "alpha", 1f, 0f);
         alpha.setDuration(DISMISS_ANIMATION_DURATION);
         
         // 缩放动画
-        ObjectAnimator scaleX = ObjectAnimator.ofFloat(cardView, "scaleX", 1f, 0.8f);
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(taskView, "scaleX", 1f, 0.8f);
         scaleX.setDuration(DISMISS_ANIMATION_DURATION);
         
-        ObjectAnimator scaleY = ObjectAnimator.ofFloat(cardView, "scaleY", 1f, 0.8f);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(taskView, "scaleY", 1f, 0.8f);
         scaleY.setDuration(DISMISS_ANIMATION_DURATION);
         
         translateX.addListener(new AnimatorListenerAdapter() {
@@ -196,20 +195,20 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
         
         mIsAnimating = true;
         
-        ObjectAnimator translateX = ObjectAnimator.ofFloat(cardView, "translationX", 
-                cardView.getTranslationX(), 0f);
+        ObjectAnimator translateX = ObjectAnimator.ofFloat(taskView, "translationX", 
+                taskView.getTranslationX(), 0f);
         translateX.setDuration(RETURN_ANIMATION_DURATION);
         
-        ObjectAnimator alpha = ObjectAnimator.ofFloat(cardView, "alpha", 
-                cardView.getAlpha(), 1f);
+        ObjectAnimator alpha = ObjectAnimator.ofFloat(taskView, "alpha", 
+                taskView.getAlpha(), 1f);
         alpha.setDuration(RETURN_ANIMATION_DURATION);
         
-        ObjectAnimator scaleX = ObjectAnimator.ofFloat(cardView, "scaleX", 
-                cardView.getScaleX(), 1f);
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(taskView, "scaleX", 
+                taskView.getScaleX(), 1f);
         scaleX.setDuration(RETURN_ANIMATION_DURATION);
         
-        ObjectAnimator scaleY = ObjectAnimator.ofFloat(cardView, "scaleY", 
-                cardView.getScaleY(), 1f);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(taskView, "scaleY", 
+                taskView.getScaleY(), 1f);
         scaleY.setDuration(RETURN_ANIMATION_DURATION);
         
         translateX.addListener(new AnimatorListenerAdapter() {
@@ -226,15 +225,17 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
     }
     
     /**
-     * 设置拖拽状态
+     * 设置拖拽状态 - SystemUI 风格
      */
     public void setDragState(boolean isDragging) {
         if (isDragging) {
-            cardView.setCardElevation(cardView.getResources().getDimension(R.dimen.task_elevation_dragging));
-            cardView.setAlpha(0.8f);
+            taskView.setScaleX(1.05f);
+            taskView.setScaleY(1.05f);
+            taskView.setAlpha(0.8f);
         } else {
-            cardView.setCardElevation(cardView.getResources().getDimension(R.dimen.task_elevation));
-            cardView.setAlpha(1f);
+            taskView.setScaleX(1f);
+            taskView.setScaleY(1f);
+            taskView.setAlpha(1f);
         }
     }
     
