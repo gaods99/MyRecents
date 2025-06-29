@@ -9,7 +9,8 @@
     <color name="task_header_background">#FFFFFF</color>
     
     <!-- Task Text - SystemUI style -->
-    <color name="task_title_color">#DE000000</color>
+    <color name="task_title_color">#FF333333</color>
+    <color name="task_title_color_dark">#FF333333</color>
     
     <!-- Task Focus - SystemUI style -->
     <color name="task_focus_indicator">#FF4081</color>

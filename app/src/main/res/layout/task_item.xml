@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Android 7.1.2 SystemUI recents style task card -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -9,7 +8,7 @@
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground">
 
-    <!-- Task thumbnail - SystemUI style full card -->
+    <!-- Task thumbnail - Fills the entire card, acts as background -->
     <ImageView
         android:id="@+id/task_thumbnail"
         android:layout_width="match_parent"
@@ -17,7 +16,7 @@
         android:scaleType="centerCrop"
         android:background="@color/task_thumbnail_background" />
 
-    <!-- Task header overlay - SystemUI style -->
+    <!-- Task header - Always visible, overlays the thumbnail -->
     <LinearLayout
         android:id="@+id/task_header"
         android:layout_width="match_parent"
@@ -31,7 +30,6 @@
         android:paddingRight="@dimen/task_header_padding"
         android:paddingBottom="@dimen/task_header_padding">
 
-        <!-- App icon -->
         <ImageView
             android:id="@+id/task_icon"
             android:layout_width="@dimen/task_icon_size"
@@ -39,7 +37,6 @@
             android:layout_marginRight="@dimen/task_icon_margin"
             android:scaleType="centerInside" />
 
-        <!-- App title - SystemUI style -->
         <TextView
             android:id="@+id/task_title"
             android:layout_width="0dp"
@@ -51,7 +48,6 @@
             android:textSize="@dimen/task_title_text_size"
             android:fontFamily="sans-serif-medium" />
 
-        <!-- Dismiss button - SystemUI style -->
         <ImageView
             android:id="@+id/task_dismiss"
             android:layout_width="@dimen/task_dismiss_size"
@@ -65,10 +61,9 @@
             android:src="@drawable/ic_close"
             android:tint="@color/task_title_color"
             android:contentDescription="@string/task_dismiss_description" />
-
     </LinearLayout>
 
-    <!-- Task focus indicator - SystemUI style -->
+    <!-- Task focus indicator -->
     <View
         android:id="@+id/task_focus_indicator"
         android:layout_width="match_parent"

@@ -15,7 +15,8 @@
     
     <!-- Task Icon - SystemUI style -->
     <dimen name="task_icon_size">24dp</dimen>
-    <dimen name="task_icon_margin">6dp</dimen>
+    <dimen name="task_icon_size_large">48dp</dimen>
+    <dimen name="task_icon_margin">8dp</dimen>
     
     <!-- Task Title - SystemUI style -->
     <dimen name="task_title_text_size">13sp</dimen>

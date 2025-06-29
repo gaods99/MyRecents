@@ -9,15 +9,18 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.util.LruCache;
 
 import com.newland.recents.model.Task;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
- * 任务加载器，参考SystemUI的实现
+ * 任务加载器，其架构参考SystemUI的实现，采用缓存优先、异步加载、失败后优雅降级的策略。
  */
 public class TaskLoader {
     
@@ -28,8 +31,14 @@ public class TaskLoader {
     private final ActivityManager mActivityManager;
     private final PackageManager mPackageManager;
     
+    private final LruCache<String, Drawable> mIconCache;
+    private final LruCache<Integer, Bitmap> mThumbnailCache;
+    // 用于标记已知加载失败的任务，避免重复加载
+    private final Set<Integer> mFailedTaskIds;
+    
     public interface TaskLoadListener {
         void onTasksLoaded(List<Task> tasks);
+        // 注意：此处的thumbnail参数现在可能为null
         void onTaskThumbnailLoaded(Task task, Bitmap thumbnail);
     }
     
@@ -37,28 +46,35 @@ public class TaskLoader {
         mContext = context.getApplicationContext();
         mActivityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
         mPackageManager = mContext.getPackageManager();
+        
+        final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        final int cacheSize = maxMemory / 8;
+        
+        mIconCache = new LruCache<>(cacheSize);
+        mThumbnailCache = new LruCache<Integer, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(Integer key, Bitmap bitmap) {
+                return bitmap.getByteCount() / 1024;
+            }
+        };
+        mFailedTaskIds = new HashSet<>();
     }
     
-    /**
-     * 加载最近任务列表
-     */
     public void loadTasks(TaskLoadListener listener) {
         new LoadTasksTask(listener).execute();
     }
     
-    /**
-     * 加载任务缩略图
-     */
     public void loadTaskThumbnail(Task task, TaskLoadListener listener) {
+        // 如果一个任务之前加载失败过，就不要再尝试了
+        if (mFailedTaskIds.contains(task.key.id)) {
+            listener.onTaskThumbnailLoaded(task, null);
+            return;
+        }
         new LoadThumbnailTask(task, listener).execute();
     }
     
-    /**
-     * 获取最近任务列表
-     */
     private List<Task> getRecentTasks() {
         List<Task> tasks = new ArrayList<>();
-        
         try {
             List<ActivityManager.RecentTaskInfo> recentTasks = 
                 mActivityManager.getRecentTasks(MAX_RECENT_TASKS, 
@@ -74,80 +90,51 @@ public class TaskLoader {
         } catch (SecurityException e) {
             Log.e(TAG, "Failed to load recent tasks", e);
         }
-        
         return tasks;
     }
     
-    /**
-     * 检查是否应该包含此任务
-     */
     private boolean shouldIncludeTask(ActivityManager.RecentTaskInfo taskInfo) {
         if (taskInfo.baseIntent == null || taskInfo.baseIntent.getComponent() == null) {
             return false;
         }
-        
         String packageName = taskInfo.baseIntent.getComponent().getPackageName();
-        
-        // 过滤掉自己的应用
-        if ("com.newland.recents".equals(packageName)) {
+        if ("com.newland.recents".equals(packageName) || "com.android.systemui".equals(packageName)) {
             return false;
         }
-        
-        // 过滤掉系统UI
-        if ("com.android.systemui".equals(packageName)) {
-            return false;
-        }
-        
-        // 过滤掉 Launcher 应用
-        if (isLauncherApp(packageName)) {
-            return false;
-        }
-        
-        return true;
+        return !isLauncherApp(packageName);
     }
     
-    /**
-     * 检查是否是 Launcher 应用（通过 Intent 查询默认桌面）
-     */
     private boolean isLauncherApp(String packageName) {
         try {
             android.content.Intent homeIntent = new android.content.Intent(android.content.Intent.ACTION_MAIN);
             homeIntent.addCategory(android.content.Intent.CATEGORY_HOME);
-            
             android.content.pm.ResolveInfo resolveInfo = mPackageManager.resolveActivity(
                 homeIntent, PackageManager.MATCH_DEFAULT_ONLY);
-            
             if (resolveInfo != null && resolveInfo.activityInfo != null) {
-                String defaultLauncherPackage = resolveInfo.activityInfo.packageName;
-                return packageName.equals(defaultLauncherPackage);
+                return packageName.equals(resolveInfo.activityInfo.packageName);
             }
         } catch (Exception e) {
             Log.w(TAG, "Failed to check default launcher for " + packageName, e);
         }
-        
         return false;
     }
     
-    /**
-     * 加载任务信息（图标、标题等）
-     */
     private void loadTaskInfo(Task task) {
-        if (task.key.sourceComponent == null) {
-            return;
+        if (task.key.sourceComponent == null) return;
+        Drawable icon = mIconCache.get(task.packageName);
+        if (icon != null) {
+            task.icon = icon;
         }
-        
         try {
             ApplicationInfo appInfo = mPackageManager.getApplicationInfo(
                 task.packageName, PackageManager.GET_META_DATA);
-            
-            // 加载应用图标
-            task.icon = mPackageManager.getApplicationIcon(appInfo);
-            
-            // 加载应用标题
+            if (task.icon == null) {
+                task.icon = mPackageManager.getApplicationIcon(appInfo);
+                mIconCache.put(task.packageName, task.icon);
+            }
             CharSequence label = mPackageManager.getApplicationLabel(appInfo);
             task.title = label != null ? label.toString() : task.packageName;
             task.titleDescription = task.title;
-            
         } catch (PackageManager.NameNotFoundException e) {
             Log.w(TAG, "Failed to load task info for " + task.packageName, e);
             task.title = task.packageName;
@@ -155,85 +142,36 @@ public class TaskLoader {
         }
     }
     
-    /**
-     * 获取任务缩略图，参考SystemUI的实现
-     */
-    private Bitmap getTaskThumbnail(Task task) {
+    private Bitmap getThumbnailFromSystem(int taskId) {
         try {
-            // 使用反射调用ActivityManager.getTaskThumbnail
             Method getTaskThumbnailMethod = ActivityManager.class.getMethod("getTaskThumbnail", int.class);
-            Object taskThumbnailObject = getTaskThumbnailMethod.invoke(mActivityManager, task.key.id);
-            
+            Object taskThumbnailObject = getTaskThumbnailMethod.invoke(mActivityManager, taskId);
             if (taskThumbnailObject != null) {
-                // 获取mainThumbnail字段
                 java.lang.reflect.Field mainThumbnailField = 
                     taskThumbnailObject.getClass().getDeclaredField("mainThumbnail");
                 mainThumbnailField.setAccessible(true);
                 Bitmap thumbnail = (Bitmap) mainThumbnailField.get(taskThumbnailObject);
-                
                 if (thumbnail != null && !thumbnail.isRecycled()) {
                     return thumbnail;
                 }
             }
         } catch (Exception e) {
-            Log.w(TAG, "Failed to get task thumbnail for task " + task.key.id, e);
+            Log.w(TAG, "Failed to get task thumbnail from system for task " + taskId, e);
         }
-        
-        // 如果无法获取缩略图，生成默认缩略图
-        return generateDefaultThumbnail(task);
+        return null;
     }
     
-    /**
-     * 生成默认缩略图
-     */
-    private Bitmap generateDefaultThumbnail(Task task) {
-        if (task.icon == null) {
-            return null;
-        }
-        
-        try {
-            int size = mContext.getResources().getDimensionPixelSize(
-                android.R.dimen.app_icon_size);
-            
-            Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(bitmap);
-            
-            task.icon.setBounds(0, 0, size, size);
-            task.icon.draw(canvas);
-            
-            return bitmap;
-        } catch (Exception e) {
-            Log.w(TAG, "Failed to generate default thumbnail", e);
-            return null;
-        }
-    }
-    
-    /**
-     * 异步加载任务列表
-     */
     private class LoadTasksTask extends AsyncTask<Void, Void, List<Task>> {
         private final TaskLoadListener mListener;
-        
-        LoadTasksTask(TaskLoadListener listener) {
-            mListener = listener;
-        }
-        
+        LoadTasksTask(TaskLoadListener listener) { mListener = listener; }
         @Override
-        protected List<Task> doInBackground(Void... voids) {
-            return getRecentTasks();
-        }
-        
+        protected List<Task> doInBackground(Void... voids) { return getRecentTasks(); }
         @Override
         protected void onPostExecute(List<Task> tasks) {
-            if (mListener != null) {
-                mListener.onTasksLoaded(tasks);
-            }
+            if (mListener != null) { mListener.onTasksLoaded(tasks); }
         }
     }
     
-    /**
-     * 异步加载缩略图
-     */
     private class LoadThumbnailTask extends AsyncTask<Void, Void, Bitmap> {
         private final Task mTask;
         private final TaskLoadListener mListener;
@@ -245,13 +183,24 @@ public class TaskLoader {
         
         @Override
         protected Bitmap doInBackground(Void... voids) {
-            return getTaskThumbnail(mTask);
+            Bitmap thumbnail = mThumbnailCache.get(mTask.key.id);
+            if (thumbnail != null) {
+                return thumbnail;
+            }
+            thumbnail = getThumbnailFromSystem(mTask.key.id);
+            if (thumbnail != null) {
+                mThumbnailCache.put(mTask.key.id, thumbnail);
+                return thumbnail;
+            }
+            // 如果加载失败，将任务ID加入失败集合
+            mFailedTaskIds.add(mTask.key.id);
+            return null;
         }
         
         @Override
         protected void onPostExecute(Bitmap thumbnail) {
-            if (mListener != null && thumbnail != null) {
-                mTask.thumbnail = thumbnail;
+            if (mListener != null) {
+                // 直接将后台线程的结果（可能是null）传递出去
                 mListener.onTaskThumbnailLoaded(mTask, thumbnail);
             }
         }

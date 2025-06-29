@@ -49,12 +49,16 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskViewHolder>
         }
         
         // Dynamically set task card size
+        int taskWidth = mSizeCalculator.getTaskWidth();
+        int taskHeight = mSizeCalculator.getTaskHeight();
         ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
-        layoutParams.width = mSizeCalculator.getTaskWidth();
-        layoutParams.height = mSizeCalculator.getTaskHeight();
+        layoutParams.width = taskWidth;
+        layoutParams.height = taskHeight;
         view.setLayoutParams(layoutParams);
         
-        return new TaskViewHolder(view, this);
+        TaskViewHolder holder = new TaskViewHolder(view, this);
+        holder.setDefaultTaskWidth(taskWidth); // 保存默认宽度
+        return holder;
     }
     
     @Override

@@ -61,6 +61,7 @@ public class Task {
     public boolean isDockable = true;
     public boolean isLocked = false;
     public boolean isStackTask = true;
+    public boolean isTopTask = false;
     
     // 任务状态
     public boolean isActive = false;
