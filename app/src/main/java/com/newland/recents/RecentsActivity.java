@@ -65,7 +65,8 @@ public class RecentsActivity extends Activity implements
     
     private void setupRecyclerView() {
         // Setup RecyclerView with horizontal layout like Launcher3
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this, 
+        // Use custom centering layout manager for single item centering
+        CenteringLinearLayoutManager layoutManager = new CenteringLinearLayoutManager(this, 
                 LinearLayoutManager.HORIZONTAL, false);
         mTaskRecyclerView.setLayoutManager(layoutManager);
         mTaskRecyclerView.setAdapter(mTaskAdapter);
@@ -197,6 +198,38 @@ public class RecentsActivity extends Activity implements
     }
     
     /**
+     * Custom LinearLayoutManager that centers single items horizontally
+     */
+    private static class CenteringLinearLayoutManager extends LinearLayoutManager {
+        
+        public CenteringLinearLayoutManager(android.content.Context context, int orientation, boolean reverseLayout) {
+            super(context, orientation, reverseLayout);
+        }
+        
+        @Override
+        public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
+            super.onLayoutChildren(recycler, state);
+            
+            // Only center when there's exactly one item
+            if (getItemCount() == 1) {
+                View child = getChildAt(0);
+                if (child != null) {
+                    int parentWidth = getWidth() - getPaddingLeft() - getPaddingRight();
+                    int childWidth = child.getWidth();
+                    
+                    if (childWidth < parentWidth) {
+                        // Calculate center position
+                        int centerOffset = (parentWidth - childWidth) / 2;
+                        
+                        // Apply centering offset
+                        child.offsetLeftAndRight(centerOffset - child.getLeft() + getPaddingLeft());
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
      * Task item decoration for spacing
      */
     private static class TaskItemDecoration extends RecyclerView.ItemDecoration {
@@ -209,16 +242,25 @@ public class RecentsActivity extends Activity implements
         @Override
         public void getItemOffsets(android.graphics.Rect outRect, View view, 
                 RecyclerView parent, RecyclerView.State state) {
-            outRect.left = spacing;
-            outRect.right = spacing;
-            
-            // Add extra spacing for first and last items
+            int itemCount = state.getItemCount();
             int position = parent.getChildAdapterPosition(view);
-            if (position == 0) {
-                outRect.left = spacing * 2;
-            }
-            if (position == state.getItemCount() - 1) {
-                outRect.right = spacing * 2;
+            
+            if (itemCount == 1) {
+                // For single item, no spacing to allow perfect centering
+                outRect.left = 0;
+                outRect.right = 0;
+            } else {
+                // For multiple items, use normal spacing
+                outRect.left = spacing;
+                outRect.right = spacing;
+                
+                // Add extra spacing for first and last items
+                if (position == 0) {
+                    outRect.left = spacing * 2;
+                }
+                if (position == itemCount - 1) {
+                    outRect.right = spacing * 2;
+                }
             }
         }
     }
