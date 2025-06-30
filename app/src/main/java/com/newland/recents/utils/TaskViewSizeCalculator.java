@@ -17,22 +17,22 @@ public class TaskViewSizeCalculator {
     
     // Android 7.1.2 SystemUI recents style - exact original dimensions and ratios
     
-    // Optimized task dimensions for better mobile display
-    private static final int OPTIMIZED_TASK_WIDTH_DP = 240;   // Reduced width for better mobile fit
-    private static final int OPTIMIZED_TASK_HEIGHT_DP = 320;  // Proportionally reduced height
+    // Optimized task dimensions for elegant mobile display
+    private static final int OPTIMIZED_TASK_WIDTH_DP = 240;   // Optimized width for mobile fit
+    private static final int OPTIMIZED_TASK_HEIGHT_DP = 380;  // Increased height for more elegant proportions
     
-    // Optimized task aspect ratio - maintains good proportions for mobile
-    private static final float OPTIMIZED_TASK_ASPECT_RATIO = 240f / 320f; // 0.75 (width/height)
+    // Optimized task aspect ratio - more elegant and slender
+    private static final float OPTIMIZED_TASK_ASPECT_RATIO = 240f / 380f; // ~0.63 (width/height)
     
     // SystemUI screen usage ratios - based on original implementation
     private static final float SYSTEMUI_WIDTH_RATIO = 0.9f;   // 90% of screen width
     private static final float SYSTEMUI_HEIGHT_RATIO = 0.75f; // 75% of screen height
     
-    // Optimized size limits (dp) - better for mobile screens
+    // Optimized size limits (dp) - elegant proportions for mobile screens
     private static final int MIN_TASK_WIDTH_DP = 200;
     private static final int MAX_TASK_WIDTH_DP = 280;
-    private static final int MIN_TASK_HEIGHT_DP = 280;
-    private static final int MAX_TASK_HEIGHT_DP = 400;
+    private static final int MIN_TASK_HEIGHT_DP = 320;  // Increased for more elegant proportions
+    private static final int MAX_TASK_HEIGHT_DP = 450;  // Increased to accommodate taller cards
     
     // Task header height (dp) - SystemUI style
     private static final int TASK_HEADER_HEIGHT_DP = 48;
@@ -70,7 +70,7 @@ public class TaskViewSizeCalculator {
     }
     
     /**
-     * Calculate task card height - Optimized with proper aspect ratio
+     * Calculate task card height - Optimized for elegant and slender proportions
      */
     public int getTaskHeight() {
         // Use optimized height as base

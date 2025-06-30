@@ -85,7 +85,8 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
      * 绑定任务数据
      * 修复1：统一使用优化后的卡片宽度，避免有无缩略图时卡片宽度不一致的问题
      * 修复2：使用智能缩放策略，优先铺满宽度同时尽量保持完整显示
-     * 优化3：减小卡片基础宽度，更适合手机屏幕显示
+     * 优化3：调整卡片尺寸，更适合手机屏幕显示
+     * 优化4：增加卡片高度，使其显得更修长优雅 (240×380dp, 宽高比0.63)
      */
     public void bind(Task task) {
         mTask = task;
