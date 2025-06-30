@@ -8,12 +8,12 @@
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground">
 
-    <!-- Task thumbnail - Fills the entire card, acts as background -->
+    <!-- Task thumbnail - Displays complete thumbnail without cropping -->
     <ImageView
         android:id="@+id/task_thumbnail"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"
+        android:scaleType="fitCenter"
         android:background="@color/task_thumbnail_background" />
 
     <!-- Task header - Always visible, overlays the thumbnail -->

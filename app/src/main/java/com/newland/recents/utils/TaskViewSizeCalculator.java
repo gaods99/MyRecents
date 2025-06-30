@@ -17,22 +17,22 @@ public class TaskViewSizeCalculator {
     
     // Android 7.1.2 SystemUI recents style - exact original dimensions and ratios
     
-    // SystemUI original task dimensions (dp) - from Android 7.1.2 source
-    private static final int SYSTEMUI_TASK_WIDTH_DP = 312;   // Original SystemUI width
-    private static final int SYSTEMUI_TASK_HEIGHT_DP = 420;  // Original SystemUI height
+    // Optimized task dimensions for better mobile display
+    private static final int OPTIMIZED_TASK_WIDTH_DP = 240;   // Reduced width for better mobile fit
+    private static final int OPTIMIZED_TASK_HEIGHT_DP = 320;  // Proportionally reduced height
     
-    // SystemUI task aspect ratio - calculated from original dimensions
-    private static final float SYSTEMUI_TASK_ASPECT_RATIO = 312f / 420f; // ~0.743 (width/height)
+    // Optimized task aspect ratio - maintains good proportions for mobile
+    private static final float OPTIMIZED_TASK_ASPECT_RATIO = 240f / 320f; // 0.75 (width/height)
     
     // SystemUI screen usage ratios - based on original implementation
     private static final float SYSTEMUI_WIDTH_RATIO = 0.9f;   // 90% of screen width
     private static final float SYSTEMUI_HEIGHT_RATIO = 0.75f; // 75% of screen height
     
-    // SystemUI size limits (dp) - based on original constraints
-    private static final int MIN_TASK_WIDTH_DP = 280;
-    private static final int MAX_TASK_WIDTH_DP = 360;
-    private static final int MIN_TASK_HEIGHT_DP = 380;
-    private static final int MAX_TASK_HEIGHT_DP = 480;
+    // Optimized size limits (dp) - better for mobile screens
+    private static final int MIN_TASK_WIDTH_DP = 200;
+    private static final int MAX_TASK_WIDTH_DP = 280;
+    private static final int MIN_TASK_HEIGHT_DP = 280;
+    private static final int MAX_TASK_HEIGHT_DP = 400;
     
     // Task header height (dp) - SystemUI style
     private static final int TASK_HEADER_HEIGHT_DP = 48;
@@ -50,19 +50,19 @@ public class TaskViewSizeCalculator {
     }
     
     /**
-     * Calculate task card width - SystemUI style
+     * Calculate task card width - Optimized for mobile display
      */
     public int getTaskWidth() {
-        // Use SystemUI original width as base
-        int baseWidth = dpToPx(SYSTEMUI_TASK_WIDTH_DP);
+        // Use optimized width as base
+        int baseWidth = dpToPx(OPTIMIZED_TASK_WIDTH_DP);
         
         // Scale based on screen density and size
         float screenWidthRatio = (float) mScreenSize.x / dpToPx(360); // Based on 360dp reference width
-        float scaleFactor = Math.min(1.2f, Math.max(0.8f, screenWidthRatio));
+        float scaleFactor = Math.min(1.1f, Math.max(0.9f, screenWidthRatio));
         
         int scaledWidth = (int) (baseWidth * scaleFactor);
         
-        // Apply SystemUI size limits
+        // Apply optimized size limits
         int minWidth = dpToPx(MIN_TASK_WIDTH_DP);
         int maxWidth = dpToPx(MAX_TASK_WIDTH_DP);
         
@@ -70,15 +70,15 @@ public class TaskViewSizeCalculator {
     }
     
     /**
-     * Calculate task card height - SystemUI style with original aspect ratio
+     * Calculate task card height - Optimized with proper aspect ratio
      */
     public int getTaskHeight() {
-        // Use SystemUI original height as base
-        int baseHeight = dpToPx(SYSTEMUI_TASK_HEIGHT_DP);
+        // Use optimized height as base
+        int baseHeight = dpToPx(OPTIMIZED_TASK_HEIGHT_DP);
         
         // Scale proportionally with width
         int taskWidth = getTaskWidth();
-        int baseWidth = dpToPx(SYSTEMUI_TASK_WIDTH_DP);
+        int baseWidth = dpToPx(OPTIMIZED_TASK_WIDTH_DP);
         float scaleFactor = (float) taskWidth / baseWidth;
         
         int scaledHeight = (int) (baseHeight * scaleFactor);
@@ -87,7 +87,7 @@ public class TaskViewSizeCalculator {
         int maxScreenHeight = (int) (mScreenSize.y * SYSTEMUI_HEIGHT_RATIO);
         scaledHeight = Math.min(scaledHeight, maxScreenHeight);
         
-        // Apply SystemUI size limits
+        // Apply optimized size limits
         int minHeight = dpToPx(MIN_TASK_HEIGHT_DP);
         int maxHeight = dpToPx(MAX_TASK_HEIGHT_DP);
         
@@ -159,21 +159,21 @@ public class TaskViewSizeCalculator {
     public String getDebugInfo() {
         int currentWidth = getTaskWidth();
         int currentHeight = getTaskHeight();
-        int originalWidthPx = dpToPx(SYSTEMUI_TASK_WIDTH_DP);
-        int originalHeightPx = dpToPx(SYSTEMUI_TASK_HEIGHT_DP);
+        int optimizedWidthPx = dpToPx(OPTIMIZED_TASK_WIDTH_DP);
+        int optimizedHeightPx = dpToPx(OPTIMIZED_TASK_HEIGHT_DP);
         float taskAspectRatio = (float) currentWidth / currentHeight;
         
         return String.format(
             "Screen: %dx%d, Density: %.1f, Landscape: %b\n" +
-            "SystemUI AspectRatio: %.3f, TaskAspectRatio: %.3f\n" +
+            "Optimized AspectRatio: %.3f, TaskAspectRatio: %.3f\n" +
             "TaskSize: %dx%d\n" +
-            "SystemUI Original: %dx%d (%.3f ratio)\n" +
+            "Optimized Base: %dx%d (%.3f ratio)\n" +
             "Scale: %.2fx width, %.2fx height",
             mScreenSize.x, mScreenSize.y, mDisplayMetrics.density, mIsLandscape,
-            SYSTEMUI_TASK_ASPECT_RATIO, taskAspectRatio,
+            OPTIMIZED_TASK_ASPECT_RATIO, taskAspectRatio,
             currentWidth, currentHeight,
-            originalWidthPx, originalHeightPx, SYSTEMUI_TASK_ASPECT_RATIO,
-            (float) currentWidth / originalWidthPx, (float) currentHeight / originalHeightPx
+            optimizedWidthPx, optimizedHeightPx, OPTIMIZED_TASK_ASPECT_RATIO,
+            (float) currentWidth / optimizedWidthPx, (float) currentHeight / optimizedHeightPx
         );
     }
     

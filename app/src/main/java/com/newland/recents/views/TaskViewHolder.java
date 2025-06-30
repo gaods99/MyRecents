@@ -83,6 +83,9 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
     
     /**
      * 绑定任务数据
+     * 修复1：统一使用优化后的卡片宽度，避免有无缩略图时卡片宽度不一致的问题
+     * 修复2：使用智能缩放策略，优先铺满宽度同时尽量保持完整显示
+     * 优化3：减小卡片基础宽度，更适合手机屏幕显示
      */
     public void bind(Task task) {
         mTask = task;
@@ -98,26 +101,20 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
             iconView.setImageResource(R.drawable.ic_default_task);
         }
 
+        // 统一使用SystemUI标准宽度，保持所有卡片宽度一致
         ViewGroup.LayoutParams params = itemView.getLayoutParams();
+        params.width = mDefaultTaskWidth; // 始终使用统一的标准宽度
+        itemView.setLayoutParams(params);
+        
         if (task.thumbnail != null) {
             thumbnailView.setImageBitmap(task.thumbnail);
-            
-            // 动态计算并设置整个任务卡片的宽度，以匹配缩略图的宽高比
-            int thumbnailHeight = task.thumbnail.getHeight();
-            int thumbnailWidth = task.thumbnail.getWidth();
-            int containerHeight = params.height;
-
-            if (containerHeight > 0 && thumbnailHeight > 0) {
-                float scale = (float) containerHeight / thumbnailHeight;
-                params.width = (int) (thumbnailWidth * scale);
-            }
-            
+            // 使用智能缩放策略：优先铺满宽度，同时尽量保持完整显示
+            setOptimalThumbnailScale(task.thumbnail);
         } else {
-            thumbnailView.setImageDrawable(null);
-            // 如果没有缩略图，恢复卡片的默认宽度
-            params.width = mDefaultTaskWidth;
+            // 没有缩略图时显示默认占位图，保持视觉一致性
+            thumbnailView.setImageResource(R.drawable.ic_default_task);
+            thumbnailView.setScaleType(ImageView.ScaleType.CENTER);
         }
-        itemView.setLayoutParams(params);
         
         taskView.setSelected(task.isFocused);
         taskView.setActivated(task.isActive);
@@ -148,6 +145,51 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
             }
         });
         translateX.start();
+    }
+    
+    /**
+     * 设置最优的缩略图缩放模式
+     * 根据缩略图的宽高比智能选择缩放策略
+     */
+    private void setOptimalThumbnailScale(android.graphics.Bitmap thumbnail) {
+        if (thumbnail == null) {
+            thumbnailView.setScaleType(ImageView.ScaleType.CENTER);
+            return;
+        }
+        
+        // 获取缩略图和容器的宽高比
+        float thumbnailRatio = (float) thumbnail.getWidth() / thumbnail.getHeight();
+        
+        // 获取容器的宽高比（减去header高度）
+        ViewGroup.LayoutParams params = itemView.getLayoutParams();
+        int containerWidth = params.width;
+        int containerHeight = params.height;
+        
+        if (containerWidth <= 0 || containerHeight <= 0) {
+            // 如果无法获取容器尺寸，使用默认策略
+            thumbnailView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            return;
+        }
+        
+        // 减去header高度，获取实际缩略图区域的高度
+        int headerHeight = taskHeader.getLayoutParams().height;
+        if (headerHeight <= 0) {
+            headerHeight = 48 * (int) itemView.getContext().getResources().getDisplayMetrics().density; // 默认48dp
+        }
+        int thumbnailAreaHeight = containerHeight - headerHeight;
+        float containerRatio = (float) containerWidth / thumbnailAreaHeight;
+        
+        // 智能选择缩放策略
+        if (Math.abs(thumbnailRatio - containerRatio) < 0.1f) {
+            // 宽高比接近，使用FIT_XY填满整个区域
+            thumbnailView.setScaleType(ImageView.ScaleType.FIT_XY);
+        } else if (thumbnailRatio > containerRatio) {
+            // 缩略图更宽，使用FIT_CENTER保持完整显示
+            thumbnailView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        } else {
+            // 缩略图更高，使用CENTER_CROP优先填满宽度
+            thumbnailView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        }
     }
     
     public Task getTask() {
