@@ -143,7 +143,8 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
                 if (mListener != null && mTask != null) {
                     mListener.onTaskDismiss(mTask, getAdapterPosition());
                 }
-                resetState();
+                // Don't reset state here, let RecyclerView handle it
+                mIsAnimating = false;
             }
         });
         translateX.start();
