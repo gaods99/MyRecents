@@ -238,11 +238,21 @@ public class TaskViewHolder extends RecyclerView.ViewHolder {
             if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
                 if (mIsSwipeInProgress) {
                     handleSwipeEnd();
-                    return true;
+                    return true; // Consume the event if it was a swipe
                 }
             }
             
-            return handled || mIsSwipeInProgress;
+            // If not a swipe, let the click listener handle it
+            if (handled) {
+                return true;
+            }
+
+            // Fallback to ensure click works
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                v.performClick();
+            }
+
+            return mIsSwipeInProgress;
         });
     }
     
