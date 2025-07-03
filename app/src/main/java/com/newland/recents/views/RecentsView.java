@@ -10,6 +10,7 @@ import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.OverScroller;
 
@@ -85,7 +86,12 @@ public class RecentsView extends FrameLayout {
             TaskView taskView = new TaskView(getContext());
             taskView.bind(task);
             taskView.setTag(task.key.id);
-            addView(taskView);
+            // 关键：添加时指定 wrap_content 的布局参数
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                    LayoutParams.WRAP_CONTENT,
+                    LayoutParams.WRAP_CONTENT
+            );
+            addView(taskView, params);
         }
         mActiveTaskIndex = getChildCount() > 0 ? 0 : -1;
         updateViewTransforms();
@@ -143,6 +149,7 @@ public class RecentsView extends FrameLayout {
         }
     }
 
+    private int getChildTop() { return (getHeight() - mTaskHeight) / 2; }
     private int getChildLeft(int i) { return (getWidth() - mTaskWidth) / 2 + i * (mTaskWidth + mTaskSpacing); }
     private float interpolate(float start, float end, float progress) { return start + (end - start) * progress; }
 
@@ -207,7 +214,34 @@ public class RecentsView extends FrameLayout {
                 mIsBeingDragged = false;
                 break;
         }
-        return mIsBeingDragged;
+        //return mIsBeingDragged;
+        return true;
+    }
+
+    private boolean inChildArea(int i, View child, float touchX, float touchY) {
+        float childLeft = child.getX();
+        float childRight = child.getX() + child.getWidth();
+        float childTop = child.getY();
+        float childBottom = child.getY() + child.getHeight();
+
+        touchX += getScrollX();
+        touchY += getScrollY();
+
+        Log.i(TAG, "x: " + touchX + "; y: " + touchY);
+        Log.i(TAG,"child{" + i + "}"
+                + "; getLeft: " + childLeft
+                + "; getRight: " + childRight
+                + "; getTop: " + childTop
+                + "; getBottom: " + childBottom);
+
+        if (touchX >= childLeft &&
+                touchX <= childRight &&
+                touchY >= childTop &&
+                touchY <= childBottom) {
+            return true;
+        }
+
+        return false;
     }
 
     @Override
@@ -225,10 +259,11 @@ public class RecentsView extends FrameLayout {
                 if (!mScroller.isFinished()) mScroller.abortAnimation();
                 mLastMotionX = x;
                 mLastMotionY = y;
+
                 // Find the view under the touch
                 for (int i = getChildCount() - 1; i >= 0; i--) {
                     View child = getChildAt(i);
-                    if (x >= child.getLeft() && x <= child.getRight() && y >= child.getTop() && y <= child.getBottom()) {
+                    if (inChildArea(i, child, x, y)) {
                         mDownView = child;
                         mDownViewIndex = i;
                         break;
@@ -241,7 +276,9 @@ public class RecentsView extends FrameLayout {
                 if (Math.abs(deltaX) > Math.abs(deltaY)) { // Horizontal scroll
                     scrollBy((int) deltaX, 0);
                 } else if (mDownView != null) { // Vertical dismiss
-                    mDownView.setTranslationY(mDownView.getTranslationY() - deltaY);
+                    float targetY = mDownView.getTranslationY() - deltaY;
+                    float bottomY = (getHeight() - mTaskHeight) / 2f;
+                    mDownView.setTranslationY(Math.min(targetY, bottomY));
                 }
                 mLastMotionX = x;
                 mLastMotionY = y;
