@@ -69,6 +69,7 @@ public class RecentsView extends FrameLayout {
         mGestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
+                Log.i(TAG, "onSingleTapUp: mIsBeingDragged = " + mIsBeingDragged);
                 if (!mIsBeingDragged) {
                     handleTaskTap();
                     return true;
@@ -149,13 +150,12 @@ public class RecentsView extends FrameLayout {
         }
     }
 
-    private int getChildTop() { return (getHeight() - mTaskHeight) / 2; }
     private int getChildLeft(int i) { return (getWidth() - mTaskWidth) / 2 + i * (mTaskWidth + mTaskSpacing); }
     private float interpolate(float start, float end, float progress) { return start + (end - start) * progress; }
 
     private void handleTaskTap() {
-        if (mCallbacks != null && mActiveTaskIndex != -1) {
-            mCallbacks.onTaskLaunched(((TaskView) getChildAt(mActiveTaskIndex)).getTask());
+        if (mCallbacks != null && mDownView != null) {
+            mCallbacks.onTaskLaunched(((TaskView) mDownView).getTask());
         }
     }
 
@@ -182,8 +182,11 @@ public class RecentsView extends FrameLayout {
     private void scrollToActiveTask() {
         if (mActiveTaskIndex == -1) return;
         int targetScroll = getChildLeft(mActiveTaskIndex) - (getWidth() - mTaskWidth) / 2;
-        mScroller.startScroll(getScrollX(), 0, targetScroll - getScrollX(), 0, 400);
-        invalidate();
+        int dx = targetScroll - getScrollX();
+        if (dx != 0) {
+            mScroller.startScroll(getScrollX(), 0, dx, 0, 400);
+            invalidate();
+        }
     }
 
     @Override
@@ -196,6 +199,7 @@ public class RecentsView extends FrameLayout {
                 mLastMotionX = ev.getX();
                 mLastMotionY = ev.getY();
                 mIsBeingDragged = !mScroller.isFinished();
+                Log.i(TAG, "1: mIsBeingDragged = " + mIsBeingDragged);
                 if (!mIsBeingDragged) {
                     mScroller.abortAnimation();
                 }
@@ -206,6 +210,8 @@ public class RecentsView extends FrameLayout {
                 final int xDiff = (int) Math.abs(x - mLastMotionX);
                 final int yDiff = (int) Math.abs(y - mLastMotionY);
                 if (xDiff > mTouchSlop || yDiff > mTouchSlop) {
+                    Log.i(TAG, "2: mIsBeingDragged = " + mIsBeingDragged);
+                    Log.i(TAG, "2: mTouchSlop = " + mTouchSlop);
                     mIsBeingDragged = true;
                 }
                 break;
@@ -214,7 +220,6 @@ public class RecentsView extends FrameLayout {
                 mIsBeingDragged = false;
                 break;
         }
-        //return mIsBeingDragged;
         return true;
     }
 
@@ -227,12 +232,12 @@ public class RecentsView extends FrameLayout {
         touchX += getScrollX();
         touchY += getScrollY();
 
-        Log.i(TAG, "x: " + touchX + "; y: " + touchY);
-        Log.i(TAG,"child{" + i + "}"
-                + "; getLeft: " + childLeft
-                + "; getRight: " + childRight
-                + "; getTop: " + childTop
-                + "; getBottom: " + childBottom);
+//        Log.i(TAG, "x: " + touchX + "; y: " + touchY);
+//        Log.i(TAG,"child{" + i + "}"
+//                + "; getLeft: " + childLeft
+//                + "; getRight: " + childRight
+//                + "; getTop: " + childTop
+//                + "; getBottom: " + childBottom);
 
         if (touchX >= childLeft &&
                 touchX <= childRight &&
@@ -287,18 +292,7 @@ public class RecentsView extends FrameLayout {
                 if (mDownView != null && Math.abs(mDownView.getTranslationY() - (getHeight() - mTaskHeight) / 2f) > mDownView.getHeight() / 3f) {
                     dismissTask(mDownViewIndex);
                 } else {
-                    final VelocityTracker velocityTracker = mVelocityTracker;
-                    velocityTracker.computeCurrentVelocity(1000, mMaximumVelocity);
-                    int initialVelocity = (int) velocityTracker.getXVelocity();
-
-                    if (Math.abs(initialVelocity) > mMinimumVelocity) {
-                        int scrollRange = (getChildCount() - 1) * mTaskSpacing;
-                        mScroller.fling(getScrollX(), 0, -initialVelocity, 0, 0, scrollRange, 0, 0);
-                    }
-                    // Snap to the nearest task
-                    int targetIndex = Math.round((float) getScrollX() / mTaskSpacing);
-                    mActiveTaskIndex = Math.max(0, Math.min(targetIndex, getChildCount() - 1));
-                    scrollToActiveTask();
+                    flingAndSnap();
                 }
                 // Fallthrough
             case MotionEvent.ACTION_CANCEL:
@@ -313,12 +307,48 @@ public class RecentsView extends FrameLayout {
         return true;
     }
 
+    private void flingAndSnap() {
+        if (getChildCount() == 0) return;
+
+        final VelocityTracker velocityTracker = mVelocityTracker;
+        velocityTracker.computeCurrentVelocity(1000, mMaximumVelocity);
+        int initialVelocity = (int) velocityTracker.getXVelocity();
+
+        int currentScrollX = getScrollX();
+        int scrollRange = getChildCount() > 0 ?
+                getChildLeft(getChildCount() - 1) - getChildLeft(0) : 0;
+
+        // Use scroller to predict final position
+        mScroller.fling(currentScrollX, 0, -initialVelocity, 0, 0, scrollRange, 0, 0);
+        int predictedFinalX = mScroller.getFinalX();
+        mScroller.abortAnimation(); // We don't want the fling itself, just the prediction
+
+        // Find the task closest to the predicted final position
+        int center = getWidth() / 2;
+        int nearestIndex = -1;
+        int minDistance = Integer.MAX_VALUE;
+
+        for (int i = 0; i < getChildCount(); i++) {
+            int childCenter = getChildLeft(i) + mTaskWidth / 2;
+            int distance = Math.abs(childCenter - (predictedFinalX + center));
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearestIndex = i;
+            }
+        }
+
+        if (nearestIndex != -1) {
+            mActiveTaskIndex = nearestIndex;
+            scrollToActiveTask();
+        }
+    }
+
     @Override
     public void computeScroll() {
         if (mScroller.computeScrollOffset()) {
             scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
             updateViewTransforms();
-            invalidate();
+            postInvalidate();
         }
     }
 }

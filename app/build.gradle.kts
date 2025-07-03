@@ -17,7 +17,7 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("E:\\workspace\\AndroidStudioProjects\\keystore\\platform.keystore")
+            storeFile = file("D:\\gaods\\Android\\Projects\\KeyStore\\platform.keystore")
             storePassword = "android"
             keyAlias = "android"
             keyPassword = "android"
