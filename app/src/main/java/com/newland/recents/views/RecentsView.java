@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -17,14 +18,16 @@ import com.newland.recents.model.Task;
 import java.util.List;
 
 public class RecentsView extends FrameLayout {
+    private static final String TAG = "newland";
 
     public interface RecentsViewCallbacks {
         void onTaskLaunched(Task task);
         void onTaskDismissed(Task task);
     }
 
-    private static final float MIN_SCALE = 0.9f;
-    private static final float MAX_SCALE = 1.0f;
+    private static final float MAX_VISUAL_DISTANCE = 720f;
+    private static final float MAX_Z = 20f;  // 中心卡片高度
+    private static final float MIN_Z = 0f;   // 两边卡片最低高度
     private static final float MIN_ALPHA = 0.7f;
     private static final float MAX_ALPHA = 1.0f;
 
@@ -97,9 +100,10 @@ public class RecentsView extends FrameLayout {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
+
         mTaskWidth = (int) (width * 0.75f);
         mTaskHeight = (int) (height * 0.8f);
-        mTaskSpacing = mTaskWidth / 3;
+        mTaskSpacing = mTaskWidth / 50;
 
         for (int i = 0; i < getChildCount(); i++) {
             getChildAt(i).measure(
@@ -118,29 +122,28 @@ public class RecentsView extends FrameLayout {
     private void updateViewTransforms() {
         int scrollX = getScrollX();
         int parentCenter = getWidth() / 2;
-        float yPosition = (getHeight() - mTaskHeight) / 2f;
 
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
             int childCenter = getChildLeft(i) + mTaskWidth / 2;
             float distanceFromCenter = Math.abs(parentCenter - (childCenter - scrollX));
-            float progress = Math.min(1f, distanceFromCenter / (getWidth() / 2f));
+            float progress = Math.min(1f, distanceFromCenter/MAX_VISUAL_DISTANCE);
 
-            float scale = interpolate(MAX_SCALE, MIN_SCALE, progress);
             float alpha = interpolate(MAX_ALPHA, MIN_ALPHA, progress);
+            float z = interpolate(MAX_Z, MIN_Z, progress);
 
-            child.setTranslationX(getChildLeft(i) - scrollX);
-            if (!mIsBeingDragged || child != mDownView) {
-                 child.setTranslationY(yPosition);
-            }
-            child.setScaleX(scale);
-            child.setScaleY(scale);
             child.setAlpha(alpha);
-            child.setTranslationZ(0); // Explicitly set Z to 0
+            child.setTranslationZ(z);
+
+            child.setTranslationX(getChildLeft(i));
+            if (!mIsBeingDragged || child != mDownView) {
+                float yPosition = (getHeight() - mTaskHeight) / 2f;
+                child.setTranslationY(yPosition);
+            }
         }
     }
 
-    private int getChildLeft(int i) { return (getWidth() - mTaskWidth) / 2 + i * mTaskSpacing; }
+    private int getChildLeft(int i) { return (getWidth() - mTaskWidth) / 2 + i * (mTaskWidth + mTaskSpacing); }
     private float interpolate(float start, float end, float progress) { return start + (end - start) * progress; }
 
     private void handleTaskTap() {
