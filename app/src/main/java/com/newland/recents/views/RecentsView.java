@@ -29,7 +29,7 @@ public class RecentsView extends FrameLayout {
     private static final float MAX_VISUAL_DISTANCE = 720f;
     private static final float MAX_Z = 20f;  // 中心卡片高度
     private static final float MIN_Z = 0f;   // 两边卡片最低高度
-    private static final float MIN_ALPHA = 0.7f;
+    private static final float MIN_ALPHA = 0.8f;
     private static final float MAX_ALPHA = 1.0f;
 
     private OverScroller mScroller;
@@ -310,14 +310,30 @@ public class RecentsView extends FrameLayout {
                     float targetY = mDownView.getTranslationY() - deltaY;
                     float bottomY = (getHeight() - mTaskHeight) / 2f;
                     mDownView.setTranslationY(Math.min(targetY, bottomY));
+                    // 添加透明度渐变效果
+                    float swipeDistance = Math.abs(targetY - bottomY);
+                    float maxSwipeDistance = mTaskHeight * 0.33f; // 最大滑动距离为卡片高度的50%
+                    float progress = Math.min(1.0f, swipeDistance / maxSwipeDistance);
+                    // 透明度从1.0渐变到0.7（向上滑动时逐渐变透明）
+                    float alpha = 1.0f - (progress * 0.3f);
+                    mDownView.setAlpha(alpha);
                 }
                 mLastMotionX = x;
                 mLastMotionY = y;
                 break;
             case MotionEvent.ACTION_UP:
-                if (mDownView != null && Math.abs(mDownView.getTranslationY() - (getHeight() - mTaskHeight) / 2f) > mDownView.getHeight() / 3f) {
+                if (mDownView != null &&
+                        Math.abs(mDownView.getTranslationY() - (getHeight() - mTaskHeight) / 2f)
+                                > mTaskHeight / 3f) {
                     dismissTask(mDownViewIndex);
                 } else {
+                    // 恢复卡片的透明度和缩放
+                    if (mDownView != null) {
+                        float yPosition = (getHeight() - mTaskHeight) / 2f;
+                        mDownView.setTranslationY(yPosition);
+                        mDownView.animate().alpha(1.0f).setDuration(200).start();
+                        mDownView = null;
+                    }
                     flingAndSnap();
                 }
                 // Fallthrough
