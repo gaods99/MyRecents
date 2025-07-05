@@ -21,11 +21,23 @@ public class RecentsController {
     public void showRecents() {
         if (RecentsActivity.isVisible()) return;
 
-        Intent intent = new Intent(mContext, RecentsActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
-                Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        mContext.startActivity(intent);
+        try {
+            Intent intent = new Intent();
+            // Assuming RECENTS_PACKAGE and RECENTS_ACTIVITY are defined elsewhere,
+            // for now, we use the known package and class name.
+            String packageName = mContext.getPackageName();
+            String activityName = RecentsActivity.class.getName();
+            
+            intent.setClassName(packageName, activityName);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+                    | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+            
+            // Using startActivity as we don't have system permissions for startActivityAsUser
+            mContext.startActivity(intent);
+        } catch (Exception e) {
+            android.util.Log.e("RecentsController", "Failed to launch RecentsActivity", e);
+        }
     }
 
     public void hideRecents() {

@@ -35,8 +35,8 @@ public class RecentsActivity extends Activity implements TaskLoader.TaskLoadList
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onPause() {
+        super.onPause();
         sInstance = null;
     }
 
