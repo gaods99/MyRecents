@@ -188,11 +188,29 @@ public class RecentsView extends FrameLayout {
     }
 
     private void scrollToActiveTask() {
-        if (mActiveTaskIndex == -1) return;
-        int targetScroll = getChildLeft(mActiveTaskIndex) - getChildLeft(0);
-        int dx = targetScroll - getScrollX();
+        if (mActiveTaskIndex == -1 || getChildCount() == 0) return;
+
+        int currentScrollX = getScrollX();
+        int targetScroll = mActiveTaskIndex * (mTaskWidth + mTaskSpacing);
+        int dx = targetScroll - currentScrollX;
+
         if (dx != 0) {
-            mScroller.startScroll(getScrollX(), 0, dx, 0, 400);
+            final int MIN_DURATION = 400; // ms
+            final int MAX_DURATION = 1200; // ms
+            final int BASE_DURATION = 200; // ms
+
+            int distance = Math.abs(dx);
+
+            // Calculate duration based on the distance to scroll, relative to the task width
+            float distanceRatio = (float) distance / mTaskWidth;
+            int duration = (int) (BASE_DURATION * (1 + distanceRatio));
+
+            // Clamp the duration to the min/max values
+            duration = Math.max(MIN_DURATION, Math.min(MAX_DURATION, duration));
+
+            Log.i(TAG, "duration: " + duration);
+
+            mScroller.startScroll(currentScrollX, 0, dx, 0, duration);
             invalidate();
         }
     }
@@ -338,7 +356,7 @@ public class RecentsView extends FrameLayout {
         int minDistance = Integer.MAX_VALUE;
 
         for (int i = 0; i < getChildCount(); i++) {
-            Log.i(TAG, String.format("%d: childLeft: %d", i, getChildLeft(i)));
+            // Log.i(TAG, String.format("%d: childLeft: %d", i, getChildLeft(i)));
             int childCenter = getChildLeft(i) + mTaskWidth / 2;
             int distance = Math.abs(childCenter - (predictedFinalX + center));
             if (distance < minDistance) {
