@@ -105,19 +105,27 @@ public class RecentsView extends FrameLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int width = MeasureSpec.getSize(widthMeasureSpec);
-        int height = MeasureSpec.getSize(heightMeasureSpec);
+        // First, let the FrameLayout do its standard measurement. This will measure children
+        // with WRAP_CONTENT and determine the final size of this RecentsView.
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
+        // Now that the RecentsView's final dimensions are set, we can get its width.
+        int width = getMeasuredWidth();
+        int height = getMeasuredHeight();
+
+        // Calculate the desired task size based on the ratio of the final measured width.
         mTaskWidth = (int) (width * 0.75f);
         mTaskHeight = (int) (height * 0.8f);
         mTaskSpacing = mTaskWidth / 50;
 
+        // Re-measure all children with the new, correct, ratio-based size.
+        // This overrides the initial WRAP_CONTENT measurement and enforces consistency.
         for (int i = 0; i < getChildCount(); i++) {
-            getChildAt(i).measure(
+            View child = getChildAt(i);
+            child.measure(
                     MeasureSpec.makeMeasureSpec(mTaskWidth, MeasureSpec.EXACTLY),
                     MeasureSpec.makeMeasureSpec(mTaskHeight, MeasureSpec.EXACTLY));
         }
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     @Override
@@ -181,7 +189,7 @@ public class RecentsView extends FrameLayout {
 
     private void scrollToActiveTask() {
         if (mActiveTaskIndex == -1) return;
-        int targetScroll = getChildLeft(mActiveTaskIndex) - (getWidth() - mTaskWidth) / 2;
+        int targetScroll = getChildLeft(mActiveTaskIndex) - getChildLeft(0);
         int dx = targetScroll - getScrollX();
         if (dx != 0) {
             mScroller.startScroll(getScrollX(), 0, dx, 0, 400);
@@ -315,11 +323,12 @@ public class RecentsView extends FrameLayout {
         int initialVelocity = (int) velocityTracker.getXVelocity();
 
         int currentScrollX = getScrollX();
-        int scrollRange = getChildCount() > 0 ?
+        int maxScrollX = getChildCount() > 0 ?
                 getChildLeft(getChildCount() - 1) - getChildLeft(0) : 0;
 
         // Use scroller to predict final position
-        mScroller.fling(currentScrollX, 0, -initialVelocity, 0, 0, scrollRange, 0, 0);
+        mScroller.fling(currentScrollX, 0,
+                -initialVelocity, 0, 0, maxScrollX, 0, 0);
         int predictedFinalX = mScroller.getFinalX();
         mScroller.abortAnimation(); // We don't want the fling itself, just the prediction
 
@@ -329,6 +338,7 @@ public class RecentsView extends FrameLayout {
         int minDistance = Integer.MAX_VALUE;
 
         for (int i = 0; i < getChildCount(); i++) {
+            Log.i(TAG, String.format("%d: childLeft: %d", i, getChildLeft(i)));
             int childCenter = getChildLeft(i) + mTaskWidth / 2;
             int distance = Math.abs(childCenter - (predictedFinalX + center));
             if (distance < minDistance) {
