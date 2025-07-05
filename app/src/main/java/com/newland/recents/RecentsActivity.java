@@ -22,7 +22,6 @@ public class RecentsActivity extends Activity implements TaskLoader.TaskLoadList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sInstance = this;
         setContentView(R.layout.recents_activity);
 
         mRecentsView = findViewById(R.id.recents_view);
@@ -32,6 +31,12 @@ public class RecentsActivity extends Activity implements TaskLoader.TaskLoadList
         mTaskManager = new TaskManager(this);
 
         mTaskLoader.loadTasks(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        sInstance = this;
     }
 
     @Override
