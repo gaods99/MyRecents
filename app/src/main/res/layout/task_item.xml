@@ -57,6 +57,7 @@
             android:clickable="true"
             android:focusable="true"
             android:padding="@dimen/task_dismiss_padding"
+            android:visibility="gone"
             android:scaleType="centerInside"
             android:src="@drawable/ic_close"
             android:tint="@color/task_title_color"

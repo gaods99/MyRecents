@@ -200,15 +200,11 @@ public class RecentsView extends FrameLayout {
             final int BASE_DURATION = 200; // ms
 
             int distance = Math.abs(dx);
-
             // Calculate duration based on the distance to scroll, relative to the task width
             float distanceRatio = (float) distance / mTaskWidth;
             int duration = (int) (BASE_DURATION * (1 + distanceRatio));
-
             // Clamp the duration to the min/max values
             duration = Math.max(MIN_DURATION, Math.min(MAX_DURATION, duration));
-
-            Log.i(TAG, "duration: " + duration);
 
             mScroller.startScroll(currentScrollX, 0, dx, 0, duration);
             invalidate();
@@ -225,7 +221,6 @@ public class RecentsView extends FrameLayout {
                 mLastMotionX = ev.getX();
                 mLastMotionY = ev.getY();
                 mIsBeingDragged = !mScroller.isFinished();
-                Log.i(TAG, "1: mIsBeingDragged = " + mIsBeingDragged);
                 if (!mIsBeingDragged) {
                     mScroller.abortAnimation();
                 }
@@ -236,8 +231,6 @@ public class RecentsView extends FrameLayout {
                 final int xDiff = (int) Math.abs(x - mLastMotionX);
                 final int yDiff = (int) Math.abs(y - mLastMotionY);
                 if (xDiff > mTouchSlop || yDiff > mTouchSlop) {
-                    Log.i(TAG, "2: mIsBeingDragged = " + mIsBeingDragged);
-                    Log.i(TAG, "2: mTouchSlop = " + mTouchSlop);
                     mIsBeingDragged = true;
                 }
                 break;
@@ -258,21 +251,10 @@ public class RecentsView extends FrameLayout {
         touchX += getScrollX();
         touchY += getScrollY();
 
-//        Log.i(TAG, "x: " + touchX + "; y: " + touchY);
-//        Log.i(TAG,"child{" + i + "}"
-//                + "; getLeft: " + childLeft
-//                + "; getRight: " + childRight
-//                + "; getTop: " + childTop
-//                + "; getBottom: " + childBottom);
-
-        if (touchX >= childLeft &&
+        return touchX >= childLeft &&
                 touchX <= childRight &&
                 touchY >= childTop &&
-                touchY <= childBottom) {
-            return true;
-        }
-
-        return false;
+                touchY <= childBottom;
     }
 
     @Override
