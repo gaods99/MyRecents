@@ -5,14 +5,17 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import android.util.LruCache;
 
 import com.newland.recents.model.Task;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -65,7 +68,7 @@ public class TaskLoader {
     }
     
     public void loadTaskThumbnail(Task task, TaskLoadListener listener) {
-        // 如果一个任务之前加载失败过，就不要再尝试了
+        // 如果一个任务之前���载失败过，就不要再尝试了
         if (mFailedTaskIds.contains(task.key.id)) {
             listener.onTaskThumbnailLoaded(task, null);
             return;
@@ -142,15 +145,38 @@ public class TaskLoader {
         }
     }
     
+    private static final BitmapFactory.Options sBitmapOptions;
+    static {
+        sBitmapOptions = new BitmapFactory.Options();
+        sBitmapOptions.inMutable = true;
+        sBitmapOptions.inPreferredConfig = Bitmap.Config.RGB_565;
+    }
     private Bitmap getThumbnailFromSystem(int taskId) {
         try {
             Method getTaskThumbnailMethod = ActivityManager.class.getMethod("getTaskThumbnail", int.class);
             Object taskThumbnailObject = getTaskThumbnailMethod.invoke(mActivityManager, taskId);
             if (taskThumbnailObject != null) {
-                java.lang.reflect.Field mainThumbnailField = 
+                java.lang.reflect.Field mainThumbnailField =
                     taskThumbnailObject.getClass().getDeclaredField("mainThumbnail");
                 mainThumbnailField.setAccessible(true);
                 Bitmap thumbnail = (Bitmap) mainThumbnailField.get(taskThumbnailObject);
+
+                java.lang.reflect.Field descriptorField = taskThumbnailObject.getClass().getDeclaredField("thumbnailFileDescriptor");
+                descriptorField.setAccessible(true);
+                ParcelFileDescriptor descriptor = (ParcelFileDescriptor) descriptorField.get(taskThumbnailObject);
+
+                if (thumbnail == null && descriptor != null) {
+                    thumbnail = BitmapFactory.decodeFileDescriptor(descriptor.getFileDescriptor(),
+                            null, sBitmapOptions);
+                }
+                if (descriptor != null) {
+                    try {
+                        descriptor.close();
+                    } catch (IOException e) {
+                        // ignore
+                    }
+                }
+
                 if (thumbnail != null && !thumbnail.isRecycled()) {
                     return thumbnail;
                 }
