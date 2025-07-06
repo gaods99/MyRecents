@@ -298,12 +298,13 @@ public class RecentsView extends FrameLayout {
                     float bottomY = (getHeight() - mTaskHeight) / 2f;
                     mDownView.setTranslationY(Math.min(targetY, bottomY));
                     // 添加透明度渐变效果
-                    float swipeDistance = Math.abs(targetY - bottomY);
-                    float maxSwipeDistance = mTaskHeight * 0.33f; // 最大滑动距离为卡片高度的50%
-                    float progress = Math.min(1.0f, swipeDistance / maxSwipeDistance);
-                    // 透明度从1.0渐变到0.7（向上滑动时逐渐变透明）
-                    float alpha = 1.0f - (progress * 0.3f);
-                    mDownView.setAlpha(alpha);
+                    if (targetY < bottomY) {
+                        float swipeDistance = bottomY - targetY;
+                        float maxSwipeDistance = mTaskHeight * 0.33f; // 最大滑动距离为卡片高度的33%
+                        float progress = Math.min(1.0f, swipeDistance / maxSwipeDistance);
+                        float alpha = 1.0f - (progress * 0.3f);
+                        mDownView.setAlpha(alpha);
+                    }
                 }
                 mLastMotionX = x;
                 mLastMotionY = y;
