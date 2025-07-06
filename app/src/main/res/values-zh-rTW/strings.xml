@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">新大陸最近工作</string>
+    
+    <!-- Task Actions -->
+    <string name="task_dismiss_description">關閉應用程式</string>
+    
+    <!-- Error Messages -->
+    <string name="recents_launch_error">無法啟動應用程式</string>
+    <string name="recents_remove_error">無法移除工作</string>
+    
+    <!-- Android 10 Launcher3 quickstep style empty state -->
+    <string name="launcher3_empty_title">沒有最近使用的應用程式</string>
+    <string name="launcher3_empty_subtitle">您最近使用的應用程式將顯示在這裡</string>
+    
+    <!-- Android 10 Launcher3 font families -->
+    <string name="launcher3_font_family">sans-serif</string>
+    <string name="launcher3_font_family_medium">sans-serif-medium</string>
+</resources>

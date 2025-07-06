@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Newland Recentes</string>
+    
+    <!-- Task Actions -->
+    <string name="task_dismiss_description">Fechar aplicativo</string>
+    
+    <!-- Error Messages -->
+    <string name="recents_launch_error">Não é possível iniciar o aplicativo</string>
+    <string name="recents_remove_error">Não é possível remover a tarefa</string>
+    
+    <!-- Android 10 Launcher3 quickstep style empty state -->
+    <string name="launcher3_empty_title">Nenhum aplicativo recente</string>
+    <string name="launcher3_empty_subtitle">Seus aplicativos usados recentemente aparecerão aqui</string>
+    
+    <!-- Android 10 Launcher3 font families -->
+    <string name="launcher3_font_family">sans-serif</string>
+    <string name="launcher3_font_family_medium">sans-serif-medium</string>
+</resources>

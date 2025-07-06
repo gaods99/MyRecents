@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Newland 최근 작업</string>
+    
+    <!-- Task Actions -->
+    <string name="task_dismiss_description">앱 닫기</string>
+    
+    <!-- Error Messages -->
+    <string name="recents_launch_error">애플리케이션을 실행할 수 없습니다</string>
+    <string name="recents_remove_error">작업을 제거할 수 없습니다</string>
+    
+    <!-- Android 10 Launcher3 quickstep style empty state -->
+    <string name="launcher3_empty_title">최근 앱이 없습니다</string>
+    <string name="launcher3_empty_subtitle">최근에 사용한 앱이 여기에 표시됩니다</string>
+    
+    <!-- Android 10 Launcher3 font families -->
+    <string name="launcher3_font_family">sans-serif</string>
+    <string name="launcher3_font_family_medium">sans-serif-medium</string>
+</resources>

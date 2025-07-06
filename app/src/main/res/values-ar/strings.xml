@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Newland الحديثة</string>
+    
+    <!-- Task Actions -->
+    <string name="task_dismiss_description">إغلاق التطبيق</string>
+    
+    <!-- Error Messages -->
+    <string name="recents_launch_error">غير قادر على تشغيل التطبيق</string>
+    <string name="recents_remove_error">غير قادر على إزالة المهمة</string>
+    
+    <!-- Android 10 Launcher3 quickstep style empty state -->
+    <string name="launcher3_empty_title">لا توجد تطبيقات حديثة</string>
+    <string name="launcher3_empty_subtitle">التطبيقات المستخدمة مؤخراً ستظهر هنا</string>
+    
+    <!-- Android 10 Launcher3 font families -->
+    <string name="launcher3_font_family">sans-serif</string>
+    <string name="launcher3_font_family_medium">sans-serif-medium</string>
+</resources>

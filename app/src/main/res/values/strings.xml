@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Newland Recents</string>
     
@@ -11,4 +12,8 @@
     <!-- Android 10 Launcher3 quickstep style empty state -->
     <string name="launcher3_empty_title">No recent apps</string>
     <string name="launcher3_empty_subtitle">Your recently used apps will appear here</string>
+    
+    <!-- Android 10 Launcher3 font families -->
+    <string name="launcher3_font_family">sans-serif</string>
+    <string name="launcher3_font_family_medium">sans-serif-medium</string>
 </resources>

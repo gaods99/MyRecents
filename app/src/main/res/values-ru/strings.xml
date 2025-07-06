@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Newland Недавние</string>
+    
+    <!-- Task Actions -->
+    <string name="task_dismiss_description">Закрыть приложение</string>
+    
+    <!-- Error Messages -->
+    <string name="recents_launch_error">Невозможно запустить приложение</string>
+    <string name="recents_remove_error">Невозможно удалить задачу</string>
+    
+    <!-- Android 10 Launcher3 quickstep style empty state -->
+    <string name="launcher3_empty_title">Нет недавних приложений</string>
+    <string name="launcher3_empty_subtitle">Недавно использованные приложения будут отображаться здесь</string>
+    
+    <!-- Android 10 Launcher3 font families -->
+    <string name="launcher3_font_family">sans-serif</string>
+    <string name="launcher3_font_family_medium">sans-serif-medium</string>
+</resources>
