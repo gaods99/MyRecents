@@ -68,7 +68,6 @@ public class TaskLoader {
     }
     
     public void loadTaskThumbnail(Task task, TaskLoadListener listener) {
-        // 如果一个任务之前���载失败过，就不要再尝试了
         if (mFailedTaskIds.contains(task.key.id)) {
             listener.onTaskThumbnailLoaded(task, null);
             return;

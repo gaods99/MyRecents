@@ -13,7 +13,6 @@ import com.newland.recents.views.RecentsView;
 import java.util.List;
 
 public class RecentsActivity extends Activity implements TaskLoader.TaskLoadListener, RecentsView.RecentsViewCallbacks {
-
     private static RecentsActivity sInstance;
 
     private RecentsView mRecentsView;
@@ -32,14 +31,13 @@ public class RecentsActivity extends Activity implements TaskLoader.TaskLoadList
 
         mTaskLoader = new TaskLoader(this);
         mTaskManager = new TaskManager(this);
-
-        mTaskLoader.loadTasks(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         sInstance = this;
+        mTaskLoader.loadTasks(this);
     }
 
     @Override
