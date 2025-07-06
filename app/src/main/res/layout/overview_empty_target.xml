@@ -28,7 +28,6 @@
         android:text="@string/launcher3_empty_title"
         android:textColor="@color/launcher3_empty_text_primary"
         android:textSize="24sp"
-        android:fontFamily="@string/launcher3_font_family"
         android:textAlignment="center"
         android:gravity="center"
         android:letterSpacing="0.01" />
@@ -42,7 +41,6 @@
         android:text="@string/launcher3_empty_subtitle"
         android:textColor="@color/launcher3_empty_text_secondary"
         android:textSize="16sp"
-        android:fontFamily="@string/launcher3_font_family_medium"
         android:textAlignment="center"
         android:gravity="center"
         android:lineSpacingExtra="4dp"
