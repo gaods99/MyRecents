@@ -2,6 +2,7 @@ package com.newland.recents;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import com.newland.recents.loader.TaskLoader;
@@ -16,6 +17,7 @@ public class RecentsActivity extends Activity implements TaskLoader.TaskLoadList
     private static RecentsActivity sInstance;
 
     private RecentsView mRecentsView;
+    private View mEmptyView;
     private TaskLoader mTaskLoader;
     private TaskManager mTaskManager;
 
@@ -25,6 +27,7 @@ public class RecentsActivity extends Activity implements TaskLoader.TaskLoadList
         setContentView(R.layout.recents_activity);
 
         mRecentsView = findViewById(R.id.recents_view);
+        mEmptyView = findViewById(R.id.empty_view);
         mRecentsView.setCallbacks(this);
 
         mTaskLoader = new TaskLoader(this);
@@ -59,9 +62,16 @@ public class RecentsActivity extends Activity implements TaskLoader.TaskLoadList
 
     @Override
     public void onTasksLoaded(List<Task> tasks) {
-        mRecentsView.setTasks(tasks);
-        for (Task task : tasks) {
-            mTaskLoader.loadTaskThumbnail(task, this);
+        if (tasks.isEmpty()) {
+            mRecentsView.setVisibility(View.GONE);
+            mEmptyView.setVisibility(View.VISIBLE);
+        } else {
+            mRecentsView.setVisibility(View.VISIBLE);
+            mEmptyView.setVisibility(View.GONE);
+            mRecentsView.setTasks(tasks);
+            for (Task task : tasks) {
+                mTaskLoader.loadTaskThumbnail(task, this);
+            }
         }
     }
 
@@ -87,5 +97,11 @@ public class RecentsActivity extends Activity implements TaskLoader.TaskLoadList
         if (!mTaskManager.removeTask(task)) {
             Toast.makeText(this, R.string.recents_remove_error, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public void onAllTasksRemoved() {
+        mRecentsView.setVisibility(View.GONE);
+        mEmptyView.setVisibility(View.VISIBLE);
     }
 }

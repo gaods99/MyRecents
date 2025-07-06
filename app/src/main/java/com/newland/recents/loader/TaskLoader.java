@@ -145,12 +145,6 @@ public class TaskLoader {
         }
     }
     
-    private static final BitmapFactory.Options sBitmapOptions;
-    static {
-        sBitmapOptions = new BitmapFactory.Options();
-        sBitmapOptions.inMutable = true;
-        sBitmapOptions.inPreferredConfig = Bitmap.Config.RGB_565;
-    }
     private Bitmap getThumbnailFromSystem(int taskId) {
         try {
             Method getTaskThumbnailMethod = ActivityManager.class.getMethod("getTaskThumbnail", int.class);
@@ -166,6 +160,8 @@ public class TaskLoader {
                 ParcelFileDescriptor descriptor = (ParcelFileDescriptor) descriptorField.get(taskThumbnailObject);
 
                 if (thumbnail == null && descriptor != null) {
+                    BitmapFactory.Options sBitmapOptions = new BitmapFactory.Options();
+                    sBitmapOptions.inMutable = true;
                     thumbnail = BitmapFactory.decodeFileDescriptor(descriptor.getFileDescriptor(),
                             null, sBitmapOptions);
                 }

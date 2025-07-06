@@ -24,6 +24,7 @@ public class RecentsView extends FrameLayout {
     public interface RecentsViewCallbacks {
         void onTaskLaunched(Task task);
         void onTaskDismissed(Task task);
+        void onAllTasksRemoved();
     }
 
     private static final float MAX_VISUAL_DISTANCE = 720f;
@@ -177,11 +178,15 @@ public class RecentsView extends FrameLayout {
                         @Override
                         public void onAnimationEnd(Animator animation) {
                             removeView(taskView);
-                            if (mActiveTaskIndex >= getChildCount()) {
-                                mActiveTaskIndex = getChildCount() - 1;
+                            if (getChildCount() == 0) {
+                                mCallbacks.onAllTasksRemoved();
+                            } else {
+                                if (mActiveTaskIndex >= getChildCount()) {
+                                    mActiveTaskIndex = getChildCount() - 1;
+                                }
+                                updateViewTransforms();
+                                scrollToActiveTask();
                             }
-                            updateViewTransforms();
-                            scrollToActiveTask();
                         }
                     }).start();
         }

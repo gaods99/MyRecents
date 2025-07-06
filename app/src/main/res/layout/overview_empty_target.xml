@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 10 Launcher3 quickstep style empty state layout -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:background="@color/recents_background"
+    android:paddingStart="48dp"
+    android:paddingEnd="48dp">
+
+    <!-- Empty state icon with Android 10 style -->
+    <ImageView
+        android:id="@+id/empty_icon"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginBottom="32dp"
+        android:src="@drawable/ic_launcher3_empty_state"
+        android:alpha="0.6"
+        android:scaleType="centerInside" />
+
+    <!-- Primary text with Android 10 Launcher3 style -->
+    <TextView
+        android:id="@+id/empty_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:text="@string/launcher3_empty_title"
+        android:textColor="@color/launcher3_empty_text_primary"
+        android:textSize="24sp"
+        android:fontFamily="@string/launcher3_font_family"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:letterSpacing="0.01" />
+
+    <!-- Secondary text with Android 10 Launcher3 style -->
+    <TextView
+        android:id="@+id/empty_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:text="@string/launcher3_empty_subtitle"
+        android:textColor="@color/launcher3_empty_text_secondary"
+        android:textSize="16sp"
+        android:fontFamily="@string/launcher3_font_family_medium"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:lineSpacingExtra="4dp"
+        android:alpha="0.87" />
+
+</LinearLayout>

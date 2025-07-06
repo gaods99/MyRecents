@@ -19,6 +19,11 @@
     <color name="empty_text">#FFFFFF</color>
     <color name="empty_subtitle_color">#CCFFFFFF</color>
     
+    <!-- Android 10 Launcher3 quickstep style empty state colors -->
+    <color name="launcher3_empty_text_primary">#FFFFFF</color>
+    <color name="launcher3_empty_text_secondary">#DDFFFFFF</color>
+    <color name="launcher3_empty_icon_tint">#80FFFFFF</color>
+    
     <!-- Material Colors -->
     <color name="purple_200">#BB86FC</color>
     <color name="purple_500">#6200EE</color>

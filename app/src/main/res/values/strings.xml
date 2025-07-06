@@ -16,4 +16,14 @@
     <!-- Accessibility -->
     <string name="task_accessibility_description">Task: %1$s</string>
     <string name="task_thumbnail_description">App preview</string>
+    <string name="overview_empty_title">No recent items</string>
+    <string name="overview_empty_subtitle">You have no recent items</string>
+    
+    <!-- Android 10 Launcher3 quickstep style empty state -->
+    <string name="launcher3_empty_title">No recent apps</string>
+    <string name="launcher3_empty_subtitle">Your recently used apps will appear here</string>
+    
+    <!-- Android 10 Launcher3 font families -->
+    <string name="launcher3_font_family">sans-serif</string>
+    <string name="launcher3_font_family_medium">sans-serif-medium</string>
 </resources>
