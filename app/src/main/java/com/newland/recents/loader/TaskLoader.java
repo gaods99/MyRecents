@@ -2,6 +2,7 @@ package com.newland.recents.loader;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -78,49 +80,84 @@ public class TaskLoader {
     private List<Task> getRecentTasks() {
         List<Task> tasks = new ArrayList<>();
         try {
-            List<ActivityManager.RecentTaskInfo> recentTasks = 
-                mActivityManager.getRecentTasks(MAX_RECENT_TASKS, 
-                    ActivityManager.RECENT_WITH_EXCLUDED);
-            
+            List<ActivityManager.RecentTaskInfo> recentTasks = getRecentTasks(48);
+
             for (ActivityManager.RecentTaskInfo taskInfo : recentTasks) {
-                if (shouldIncludeTask(taskInfo)) {
-                    Task task = new Task(taskInfo);
-                    loadTaskInfo(task);
-                    tasks.add(task);
-                }
+                Task task = new Task(taskInfo);
+                loadTaskInfo(task);
+//                Log.i(TAG, "Add: " + task.packageName
+//                        + " taskId: " + task.key.id
+//                        + " baseIntent: " + taskInfo.baseIntent);
+                tasks.add(task);
             }
         } catch (SecurityException e) {
             Log.e(TAG, "Failed to load recent tasks", e);
         }
         return tasks;
     }
-    
+
+    public static final int RECENT_WITH_EXCLUDED = 0x0001;
+    public static final int RECENT_IGNORE_UNAVAILABLE = 0x0002;
+    public static final int RECENT_INCLUDE_PROFILES = 0x0004;
+    public static final int RECENT_IGNORE_HOME_STACK_TASKS = 0x0008;
+    public static final int RECENT_INGORE_DOCKED_STACK_TOP_TASK = 0x0010;
+    public static final int RECENT_INGORE_PINNED_STACK_TASKS = 0x0020;
+
+    public List<ActivityManager.RecentTaskInfo> getRecentTasks(int numLatestTasks) {
+        // Remove home/recents/excluded tasks
+        int minNumTasksToQuery = 10;
+        int numTasksToQuery = Math.max(minNumTasksToQuery, numLatestTasks);
+        int flags = RECENT_IGNORE_HOME_STACK_TASKS |
+                RECENT_INGORE_DOCKED_STACK_TOP_TASK |
+                RECENT_INGORE_PINNED_STACK_TASKS |
+                RECENT_IGNORE_UNAVAILABLE |
+                RECENT_INCLUDE_PROFILES |
+                RECENT_WITH_EXCLUDED;
+
+        List<ActivityManager.RecentTaskInfo> tasks = null;
+        try {
+            tasks = mActivityManager.getRecentTasks(numTasksToQuery, flags);
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to get recent tasks", e);
+        }
+
+        // Break early if we can't get a valid set of tasks
+        if (tasks == null) {
+            return new ArrayList<>();
+        }
+
+        boolean isFirstValidTask = true;
+        Iterator<ActivityManager.RecentTaskInfo> iter = tasks.iterator();
+        while (iter.hasNext()) {
+            ActivityManager.RecentTaskInfo t = iter.next();
+            // NOTE: The order of these checks happens in the expected order of the traversal of the
+            // tasks
+            // Remove the task if it is marked as excluded, unless it is the first most task and we
+            // are requested to include it
+            boolean isExcluded = (t.baseIntent.getFlags() & Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
+                    == Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS;
+            if (isExcluded && (!isFirstValidTask)) {
+                iter.remove();
+            }
+
+            if (!shouldIncludeTask(t)) {
+                iter.remove();
+            }
+
+            isFirstValidTask = false;
+        }
+
+        return tasks.subList(0, Math.min(tasks.size(), numLatestTasks));
+    }
+
     private boolean shouldIncludeTask(ActivityManager.RecentTaskInfo taskInfo) {
-        if (taskInfo.baseIntent == null || taskInfo.baseIntent.getComponent() == null) {
+        if (taskInfo.baseIntent.getComponent() == null) {
             return false;
         }
         String packageName = taskInfo.baseIntent.getComponent().getPackageName();
-        if ("com.newland.recents".equals(packageName) || "com.android.systemui".equals(packageName)) {
-            return false;
-        }
-        return !isLauncherApp(packageName);
+        return !"com.newland.recents".equals(packageName) && !"com.android.systemui".equals(packageName);
     }
-    
-    private boolean isLauncherApp(String packageName) {
-        try {
-            android.content.Intent homeIntent = new android.content.Intent(android.content.Intent.ACTION_MAIN);
-            homeIntent.addCategory(android.content.Intent.CATEGORY_HOME);
-            android.content.pm.ResolveInfo resolveInfo = mPackageManager.resolveActivity(
-                homeIntent, PackageManager.MATCH_DEFAULT_ONLY);
-            if (resolveInfo != null && resolveInfo.activityInfo != null) {
-                return packageName.equals(resolveInfo.activityInfo.packageName);
-            }
-        } catch (Exception e) {
-            Log.w(TAG, "Failed to check default launcher for " + packageName, e);
-        }
-        return false;
-    }
-    
+
     private void loadTaskInfo(Task task) {
         if (task.key.sourceComponent == null) return;
         Drawable icon = mIconCache.get(task.packageName);
