@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Recents Background - SystemUI style -->
-    <color name="recents_background">#F0000000</color>
+    <color name="recents_background">#99000000</color>
     
     <!-- Task Card - SystemUI style -->
     <color name="task_background">#FAFAFA</color>
