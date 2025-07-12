@@ -126,7 +126,6 @@ public class TaskLoader {
             return new ArrayList<>();
         }
 
-        boolean isFirstValidTask = true;
         Iterator<ActivityManager.RecentTaskInfo> iter = tasks.iterator();
         while (iter.hasNext()) {
             ActivityManager.RecentTaskInfo t = iter.next();
@@ -136,15 +135,12 @@ public class TaskLoader {
             // are requested to include it
             boolean isExcluded = (t.baseIntent.getFlags() & Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS)
                     == Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS;
-            if (isExcluded && (!isFirstValidTask)) {
+            if (isExcluded) {
                 iter.remove();
             }
-
             if (!shouldIncludeTask(t)) {
                 iter.remove();
             }
-
-            isFirstValidTask = false;
         }
 
         return tasks.subList(0, Math.min(tasks.size(), numLatestTasks));
@@ -155,7 +151,7 @@ public class TaskLoader {
             return false;
         }
         String packageName = taskInfo.baseIntent.getComponent().getPackageName();
-        return !"com.newland.recents".equals(packageName) && !"com.android.systemui".equals(packageName);
+        return !"com.android.systemui".equals(packageName);
     }
 
     private void loadTaskInfo(Task task) {

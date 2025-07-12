@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 
+import androidx.annotation.NonNull;
+
 /**
  * 任务数据模型，参考Launcher3的Task实现
  */
@@ -33,7 +35,7 @@ public class Task {
             this.id = taskInfo.persistentId;
             this.windowingMode = 0; // Default windowing mode
             this.baseIntent = taskInfo.baseIntent;
-            this.sourceComponent = taskInfo.baseIntent != null ? taskInfo.baseIntent.getComponent() : null;
+            this.sourceComponent = taskInfo.baseIntent.getComponent();
             this.userId = 0; // Default user ID for Android 7 compatibility
             this.lastActiveTime = System.currentTimeMillis(); // Use current time for Android 7 compatibility
         }
@@ -77,17 +79,10 @@ public class Task {
     
     public Task(ActivityManager.RecentTaskInfo taskInfo) {
         this.key = new TaskKey(taskInfo);
-        if (taskInfo.baseIntent != null && taskInfo.baseIntent.getComponent() != null) {
+        if (taskInfo.baseIntent.getComponent() != null) {
             this.packageName = taskInfo.baseIntent.getComponent().getPackageName();
         }
         this.title = taskInfo.description != null ? taskInfo.description.toString() : "";
-    }
-    
-    /**
-     * 获取任务的唯一标识
-     */
-    public String getTopComponent() {
-        return key.sourceComponent != null ? key.sourceComponent.flattenToString() : "";
     }
     
     /**
@@ -95,18 +90,6 @@ public class Task {
      */
     public boolean isDismissable() {
         return !isLocked;
-    }
-    
-    /**
-     * 检查是否是系统任务
-     */
-    public boolean isSystemTask() {
-        if (packageName == null) {
-            return false;
-        }
-        
-        // 系统UI应用
-        return packageName.equals("com.android.systemui");
     }
     
     @Override
@@ -122,6 +105,7 @@ public class Task {
         return key != null ? key.hashCode() : 0;
     }
     
+    @NonNull
     @Override
     public String toString() {
         return "Task{" +

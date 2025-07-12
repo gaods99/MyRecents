@@ -7,8 +7,15 @@ public class RecentsController {
     private static RecentsController sInstance;
     private final Context mContext;
 
+    private Intent mHomeIntent;
+
     private RecentsController(Context context) {
         mContext = RecentsApp.getContext();
+
+        mHomeIntent = new Intent(Intent.ACTION_MAIN, null);
+        mHomeIntent.addCategory(Intent.CATEGORY_HOME);
+        mHomeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
     }
 
     public static synchronized RecentsController getInstance(Context context) {
@@ -20,6 +27,8 @@ public class RecentsController {
 
     public void showRecents() {
         if (RecentsActivity.isVisible()) return;
+
+        mContext.startActivity(mHomeIntent);
 
         try {
             Intent intent = new Intent();
